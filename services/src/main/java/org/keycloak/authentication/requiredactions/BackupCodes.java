@@ -5,6 +5,7 @@ import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.credential.BackupCodeCredentialProviderFactory;
 import org.keycloak.credential.CredentialProvider;
+import org.keycloak.events.Details;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.events.EventType;
 import org.keycloak.models.UserModel;
@@ -34,8 +35,7 @@ public class BackupCodes implements RequiredActionProvider {
     @Override
     public void processAction(RequiredActionContext context) {
         // TODO: Hash backupCodes
-        EventBuilder event = context.getEvent();
-        event.event(EventType.UPDATE_BACKUP_CODES);
+        context.getEvent().detail(Details.CREDENTIAL_TYPE, BackupCodeCredentialModel.TYPE);
 
         MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
         String[] codes = formData.getFirst("backupCodes").split(",");

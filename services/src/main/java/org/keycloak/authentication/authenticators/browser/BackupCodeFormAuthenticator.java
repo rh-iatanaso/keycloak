@@ -5,6 +5,7 @@ import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.credential.CredentialModel;
+import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.KeycloakSession;
@@ -32,6 +33,8 @@ public class BackupCodeFormAuthenticator implements Authenticator {
     @Override
     public void action(AuthenticationFlowContext context) {
 
+        context.getEvent().detail(Details.CREDENTIAL_TYPE, BackupCodeCredentialModel.TYPE);
+
         MultivaluedMap<String, String> params = context.getHttpRequest().getDecodedFormParameters();
 
         if (params.containsKey("cancel")) {
@@ -53,9 +56,6 @@ public class BackupCodeFormAuthenticator implements Authenticator {
         boolean isValid = credentialManager(context).isValid(realm, user, UserCredentialModel.backupCode(backupCode, backupCodeNumber));
 
         if (!isValid) {
-            context.getEvent().user(user);
-            context.getEvent().error(Errors.INVALID_USER_CREDENTIALS);
-
             Response challenge = loginForm(context, true);
 
             context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, challenge);
@@ -82,6 +82,9 @@ public class BackupCodeFormAuthenticator implements Authenticator {
         LoginFormsProvider form = context.form();
 
         if (withError) {
+            context.getEvent().user(context.getUser());
+            context.getEvent().error(Errors.INVALID_USER_CREDENTIALS);
+
             // TODO: message is supposed to be an i18n key
             form.addError(new FormMessage("backupCode", "Invalid Backup Code"));
         }

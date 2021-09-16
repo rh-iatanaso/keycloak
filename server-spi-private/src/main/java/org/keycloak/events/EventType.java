@@ -69,11 +69,6 @@ public enum EventType {
     REMOVE_TOTP(true),
     REMOVE_TOTP_ERROR(true),
 
-    UPDATE_BACKUP_CODES(true),
-    UPDATE_BACKUP_CODES_ERROR(true),
-    REMOVE_BACKUP_CODES(true),
-    REMOVE_BACKUP_CODES_ERROR(true),
-
     GRANT_CONSENT(true),
     GRANT_CONSENT_ERROR(true),
     UPDATE_CONSENT(true),
