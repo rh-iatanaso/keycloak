@@ -16,6 +16,7 @@ public class BackupCodesFactory implements RequiredActionFactory {
 
     @Override
     public RequiredActionProvider create(KeycloakSession session) {
+        // TODO: Can be singleton?
         return new BackupCodes();
     }
 

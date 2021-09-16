@@ -1,7 +1,6 @@
 package org.keycloak.credential;
 
 import org.jboss.logging.Logger;
-import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserCredentialModel;
@@ -26,7 +25,7 @@ public class BackupCodeCredentialProvider implements CredentialProvider<BackupCo
 
     @Override
     public CredentialModel createCredential(RealmModel realm, UserModel user, BackupCodeCredentialModel credentialModel) {
-        credentialModel.setCreatedDate(Time.currentTimeMillis());
+        // TODO: Should we handle the case where BackupCodes already exist here? Only possible through direct HTTP calls.
         return session.userCredentialManager().createCredential(realm, user, credentialModel);
     }
 
@@ -83,6 +82,7 @@ public class BackupCodeCredentialProvider implements CredentialProvider<BackupCo
         String response = credentialInput.getChallengeResponse();
         int codeNumber = Integer.parseInt(credentialInput.getCredentialId());
 
+        // TODO: Do we need to handle the case where no backup codes are configured at this point in the execution?
         CredentialModel credential = session.userCredentialManager().getStoredCredentialsByTypeStream(realm, user, getType()).findFirst().get();
 
         BackupCodeCredentialModel backupCodeCredentialModel = BackupCodeCredentialModel.createFromCredentialModel(credential);

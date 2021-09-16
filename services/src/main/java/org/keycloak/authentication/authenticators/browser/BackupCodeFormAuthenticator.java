@@ -1,12 +1,12 @@
 package org.keycloak.authentication.authenticators.browser;
 
-import org.keycloak.authentication.AuthenticationFlow;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.events.Errors;
+import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserCredentialManager;
@@ -26,7 +26,7 @@ public class BackupCodeFormAuthenticator implements Authenticator {
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
-        context.challenge(context.form().createLoginBackupCode());
+        context.challenge(loginForm(context, false));
     }
 
     @Override
@@ -43,8 +43,7 @@ public class BackupCodeFormAuthenticator implements Authenticator {
         String backupCodeNumber = params.getFirst("backupCodeNumber");
 
         if (ObjectUtil.isBlank(backupCode)) {
-            // TODO: i18n?
-            context.forceChallenge(context.form().addError(new FormMessage("backupCode", "Empty backup code")).createLoginBackupCode());
+            context.forceChallenge(loginForm(context, true));
             return;
         }
 
@@ -57,9 +56,7 @@ public class BackupCodeFormAuthenticator implements Authenticator {
             context.getEvent().user(user);
             context.getEvent().error(Errors.INVALID_USER_CREDENTIALS);
 
-            Response challenge = context.form()
-                    .addError(new FormMessage("backupCode", "Invalid Backup Code"))
-                    .createLoginBackupCode();
+            Response challenge = loginForm(context, true);
 
             context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, challenge);
             return;
@@ -79,6 +76,17 @@ public class BackupCodeFormAuthenticator implements Authenticator {
         }
 
         context.success();
+    }
+
+    private static Response loginForm(AuthenticationFlowContext context, boolean withError) {
+        LoginFormsProvider form = context.form();
+
+        if (withError) {
+            // TODO: message is supposed to be an i18n key
+            form.addError(new FormMessage("backupCode", "Invalid Backup Code"));
+        }
+
+        return form.createLoginBackupCode();
     }
 
     private static UserCredentialManager credentialManager(AuthenticationFlowContext context) {
