@@ -85,8 +85,7 @@ public class BackupCodeFormAuthenticator implements Authenticator {
             context.getEvent().user(context.getUser());
             context.getEvent().error(Errors.INVALID_USER_CREDENTIALS);
 
-            // TODO: message is supposed to be an i18n key
-            form.addError(new FormMessage("backupCode", "Invalid Backup Code"));
+            form.addError(new FormMessage("backupCode", "backup-codes-error-invalid"));
         }
 
         return form.createLoginBackupCode();
