@@ -2,7 +2,7 @@
 <@layout.registrationLayout; section>
 
     <#if section = "header">
-        Backup Codes
+        ${msg("backup-code-config-header")}
     <#elseif section = "form">
         <ol id="kc-backup-codes-list">
             <#list backupCodes.codes as code>
@@ -10,7 +10,7 @@
             </#list>
         </ol>
 
-        <p>Download or print these codes before continuing. They will not be viewable after clicking Submit. Blah blah blah whatever.</p>
+        <p>${msg("backup-code-config-description")}</p>
 
         <form action="${url.loginAction}" class="${properties.kcFormClass!}" id="kc-backup-codes-settings-form" method="post">
             <input type="hidden" name="backupCodes" value="${backupCodes.backupCodesList}" />

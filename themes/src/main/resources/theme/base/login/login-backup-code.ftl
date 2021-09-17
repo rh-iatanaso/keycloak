@@ -2,16 +2,17 @@
 <@layout.registrationLayout; section>
 
     <#if section = "header">
-        Login with Backup Code
+        ${msg("auth-backup-code-header")}
     <#elseif section = "form">
-        <form id="kc-otp-login-form" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
+        <form id="kc-backup-code-login-form" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
             <div class="${properties.kcFormGroupClass!}">
                 <div class="${properties.kcLabelWrapperClass!}">
-                    <label for="backupCode" class="${properties.kcLabelClass!}">Enter Backup Code #${backupCodes.codeNumber?c}</label>
+                    <label for="backupCode" class="${properties.kcLabelClass!}">${msg("auth-backup-code-prompt", backupCodes.codeNumber?c)}</label>
                 </div>
 
-            <div class="${properties.kcInputWrapperClass!}">
-                <input id="backupCode" name="backupCode" autocomplete="off" type="text" class="${properties.kcInputClass!}" autofocus/>
+                <div class="${properties.kcInputWrapperClass!}">
+                    <input id="backupCode" name="backupCode" autocomplete="off" type="text" class="${properties.kcInputClass!}" autofocus/>
+                </div>
             </div>
 
             <div class="${properties.kcFormGroupClass!}">
