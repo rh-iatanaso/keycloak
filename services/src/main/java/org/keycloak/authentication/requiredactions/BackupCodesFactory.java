@@ -9,6 +9,8 @@ import org.keycloak.models.UserModel;
 
 public class BackupCodesFactory implements RequiredActionFactory {
 
+    private static final BackupCodes INSTANCE = new BackupCodes();
+
     @Override
     public String getDisplayText() {
         return "Backup Codes";
@@ -16,8 +18,7 @@ public class BackupCodesFactory implements RequiredActionFactory {
 
     @Override
     public RequiredActionProvider create(KeycloakSession session) {
-        // TODO: Can be singleton?
-        return new BackupCodes();
+        return INSTANCE;
     }
 
     @Override
