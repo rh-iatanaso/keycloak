@@ -80,7 +80,6 @@ public class BackupCodeCredentialProvider implements CredentialProvider<BackupCo
         }
 
         String response = credentialInput.getChallengeResponse();
-        int codeNumber = Integer.parseInt(credentialInput.getCredentialId());
 
         // TODO: Do we need to handle the case where no backup codes are configured at this point in the execution?
         CredentialModel credential = session.userCredentialManager().getStoredCredentialsByTypeStream(realm, user, getType()).findFirst().get();

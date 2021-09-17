@@ -43,7 +43,6 @@ public class BackupCodeFormAuthenticator implements Authenticator {
         }
 
         String backupCode = params.getFirst("backupCode");
-        String backupCodeNumber = params.getFirst("backupCodeNumber");
 
         if (ObjectUtil.isBlank(backupCode)) {
             context.forceChallenge(loginForm(context, true));
@@ -53,7 +52,7 @@ public class BackupCodeFormAuthenticator implements Authenticator {
         RealmModel realm = context.getRealm();
         UserModel user = context.getUser();
 
-        boolean isValid = credentialManager(context).isValid(realm, user, UserCredentialModel.backupCode(backupCode, backupCodeNumber));
+        boolean isValid = credentialManager(context).isValid(realm, user, UserCredentialModel.backupCode(backupCode));
 
         if (!isValid) {
             Response challenge = loginForm(context, true);

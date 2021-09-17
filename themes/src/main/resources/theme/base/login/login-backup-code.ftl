@@ -5,7 +5,6 @@
         Login with Backup Code
     <#elseif section = "form">
         <form id="kc-otp-login-form" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
-            <input type="hidden" name="backupCodeNumber" value="${backupCodes.codeNumber?c}" />
             <div class="${properties.kcFormGroupClass!}">
                 <div class="${properties.kcLabelWrapperClass!}">
                     <label for="backupCode" class="${properties.kcLabelClass!}">Enter Backup Code #${backupCodes.codeNumber?c}</label>
