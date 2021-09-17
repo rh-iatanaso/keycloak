@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class BackupCode {
 
-    private int number;
-    private String value;
+    private final int number;
+    private final String value;
 
     @JsonCreator
     public BackupCode(@JsonProperty("number") int number, @JsonProperty("value") String value) {
@@ -18,16 +18,8 @@ public class BackupCode {
         return number;
     }
 
-    public void setNumber(int number) {
-        this.number = number;
-    }
-
     public String getValue() {
         return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
     }
 
 }
