@@ -6,9 +6,6 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.BackupCodeCredentialModel;
 
-import java.util.List;
-import java.util.Random;
-
 public class BackupCodeLoginBean {
 
     private final int codeNumber;
@@ -18,10 +15,7 @@ public class BackupCodeLoginBean {
 
         BackupCodeCredentialModel backupCodeCredentialModel = BackupCodeCredentialModel.createFromCredentialModel(credentialModel);
 
-        List<Integer> remaining = backupCodeCredentialModel.getRemainingCodeNumbers();
-
-        Random random = new Random();
-        this.codeNumber = remaining.get(random.nextInt(remaining.size()));
+        this.codeNumber = backupCodeCredentialModel.getNextBackupCode().getNumber();
     }
 
     public int getCodeNumber() {

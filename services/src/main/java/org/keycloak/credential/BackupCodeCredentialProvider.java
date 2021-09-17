@@ -87,14 +87,12 @@ public class BackupCodeCredentialProvider implements CredentialProvider<BackupCo
 
         BackupCodeCredentialModel backupCodeCredentialModel = BackupCodeCredentialModel.createFromCredentialModel(credential);
 
-        String code = backupCodeCredentialModel.getCode(codeNumber);
-
-        if (code == null || !backupCodeCredentialModel.hasCodes()) {
+        if (backupCodeCredentialModel.allCodesUsed()) {
             return false;
         }
 
-        if (code.equals(response)) {
-            backupCodeCredentialModel.removeBackupCode(codeNumber);
+        if (backupCodeCredentialModel.getNextBackupCode().getValue().equals(response)) {
+            backupCodeCredentialModel.removeBackupCode();
             session.userCredentialManager().updateCredential(realm, user, backupCodeCredentialModel);
             return true;
         }

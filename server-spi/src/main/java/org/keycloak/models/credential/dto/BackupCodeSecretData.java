@@ -4,36 +4,22 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class BackupCodeSecretData {
 
-    private final Map<String, String> codes;
+    private final List<BackupCode> codes;
 
     @JsonCreator
-    public BackupCodeSecretData(@JsonProperty("codes") Map<String, String> codes) {
+    public BackupCodeSecretData(@JsonProperty("codes") List<BackupCode> codes) {
         this.codes = codes;
     }
 
-    public Map<String, String> getCodes() {
+    public List<BackupCode> getCodes() {
         return this.codes;
     }
 
-    public List<Integer> remainingCodeNumbers() {
-        return this.codes.keySet().stream().map(Integer::parseInt).collect(Collectors.toList());
-    }
-
-    public boolean hasCodes() {
-        return !codes.isEmpty();
-    }
-
-    public String getCode(int number) {
-        return codes.get(String.valueOf(number));
-    }
-
-    public void removeCode(int number) {
-        this.codes.remove(String.valueOf(number));
+    public void removeNextBackupCode() {
+        this.codes.remove(0);
     }
 
 }

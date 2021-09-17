@@ -66,7 +66,8 @@ public class BackupCodeFormAuthenticator implements Authenticator {
 
         if (credential.isPresent()) {
             BackupCodeCredentialModel backupCodeCredentialModel = BackupCodeCredentialModel.createFromCredentialModel(credential.get());
-            if (!backupCodeCredentialModel.hasCodes()) {
+
+            if (backupCodeCredentialModel.allCodesUsed()) {
                 credentialManager(context).removeStoredCredential(realm, user, backupCodeCredentialModel.getId());
                 user.addRequiredAction(UserModel.RequiredAction.CONFIGURE_BACKUP_CODES);
             }

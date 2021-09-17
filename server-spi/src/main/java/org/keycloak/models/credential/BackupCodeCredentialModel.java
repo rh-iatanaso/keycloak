@@ -1,14 +1,14 @@
 package org.keycloak.models.credential;
 
 import org.keycloak.credential.CredentialModel;
+import org.keycloak.models.credential.dto.BackupCode;
 import org.keycloak.models.credential.dto.BackupCodeCredentialData;
 import org.keycloak.models.credential.dto.BackupCodeSecretData;
 import org.keycloak.util.JsonSerialization;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class BackupCodeCredentialModel extends CredentialModel {
 
@@ -22,21 +22,17 @@ public class BackupCodeCredentialModel extends CredentialModel {
         this.secretData = secretData;
     }
 
-    public List<Integer> getRemainingCodeNumbers() {
-        return this.secretData.remainingCodeNumbers();
+    public BackupCode getNextBackupCode() {
+        return this.secretData.getCodes().get(0);
     }
 
-    public String getCode(int number) {
-        return this.secretData.getCode(number);
+    public boolean allCodesUsed() {
+        return this.secretData.getCodes().isEmpty();
     }
 
-    public boolean hasCodes() {
-        return this.secretData.hasCodes();
-    }
-
-    public void removeBackupCode(int number) {
+    public void removeBackupCode() {
         try {
-            this.secretData.removeCode(number);
+            this.secretData.removeNextBackupCode();
 
             this.setSecretData(JsonSerialization.writeValueAsString(this.secretData));
         }
@@ -46,7 +42,7 @@ public class BackupCodeCredentialModel extends CredentialModel {
     }
 
     public static BackupCodeCredentialModel createFromValues(String[] codes, long generatedAt, int hashIterations, String algorithm) {
-        BackupCodeSecretData secretData = new BackupCodeSecretData(asMap(codes));
+        BackupCodeSecretData secretData = new BackupCodeSecretData(toBackupCodes(codes));
         BackupCodeCredentialData credentialData = new BackupCodeCredentialData(hashIterations, algorithm);
 
         BackupCodeCredentialModel model = new BackupCodeCredentialModel(credentialData, secretData);
@@ -64,13 +60,14 @@ public class BackupCodeCredentialModel extends CredentialModel {
         }
     }
 
-    private static Map<String, String> asMap(String[] codes) {
-        Map<String, String> codeMap = new HashMap<>();
+    private static List<BackupCode> toBackupCodes(String[] codes) {
+        List<BackupCode> backupCodes = new ArrayList<>();
 
         for(int i = 0; i < codes.length; i++) {
-            codeMap.put(String.valueOf(i + 1), codes[i]);
+            backupCodes.add(new BackupCode(i + 1, codes[i]));
         }
-        return codeMap;
+
+        return backupCodes;
     }
 
     public static BackupCodeCredentialModel createFromCredentialModel(CredentialModel credentialModel) {
