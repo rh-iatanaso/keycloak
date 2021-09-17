@@ -37,11 +37,6 @@ public class BackupCodeFormAuthenticator implements Authenticator {
 
         MultivaluedMap<String, String> params = context.getHttpRequest().getDecodedFormParameters();
 
-        if (params.containsKey("cancel")) {
-            context.cancelLogin();
-            return;
-        }
-
         String backupCode = params.getFirst("backupCode");
 
         if (ObjectUtil.isBlank(backupCode)) {
