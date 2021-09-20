@@ -27,7 +27,11 @@ public class BackupCodeCredentialProvider implements CredentialProvider<BackupCo
 
     @Override
     public CredentialModel createCredential(RealmModel realm, UserModel user, BackupCodeCredentialModel credentialModel) {
-        // TODO: Should we handle the case where BackupCodes already exist here? Only possible through direct HTTP calls.
+        session.userCredentialManager()
+                .getStoredCredentialsByTypeStream(realm, user, getType())
+                .findFirst()
+                .ifPresent(model -> deleteCredential(realm, user, model.getId()));
+
         return session.userCredentialManager().createCredential(realm, user, credentialModel);
     }
 
