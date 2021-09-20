@@ -18,20 +18,28 @@
 package org.keycloak.models.utils;
 
 import org.keycloak.common.util.Base64;
+import org.keycloak.common.util.RandomString;
 import org.keycloak.crypto.Algorithm;
 import org.keycloak.crypto.JavaAlgorithm;
 import org.keycloak.jose.jws.crypto.HashUtils;
 import org.keycloak.utils.StringUtil;
 
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author <a href="mailto:anascime@redhat.com">Andre Nascimento</a>
  */
 public class BackupAuthnCodesUtils {
 
+    private static final int NUMBER_OF_CODES = 5;
+    private static final RandomString randomString = new RandomString(4, new SecureRandom());
     public static final int NUM_HASH_ITERATIONS = 1;
     public static final String NOM_ALGORITHM_TO_HASH = Algorithm.RS256;
+
 
     public static String hashRawCode(String rawGeneratedCode) {
         String hashedCode = null;
@@ -55,4 +63,18 @@ public class BackupAuthnCodesUtils {
 
         return (hashedInputBackupCode.equals(hashedSavedBackupCode));
     }
+
+    public static List<String> generateRawCodes() {
+        return Stream.generate(BackupAuthnCodesUtils::newCode)
+                     .limit(NUMBER_OF_CODES)
+                     .collect(Collectors.toList());
+    }
+
+    private static String newCode() {
+        return String.join("-",
+                           randomString.nextString(),
+                           randomString.nextString(),
+                           randomString.nextString());
+    }
+
 }
