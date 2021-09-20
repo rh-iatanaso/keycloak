@@ -7,6 +7,8 @@ import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.BackupCodeCredentialModel;
 
+import java.util.Optional;
+
 
 public class BackupCodeCredentialProvider implements CredentialProvider<BackupCodeCredentialModel>, CredentialInputValidator {
 
@@ -81,10 +83,15 @@ public class BackupCodeCredentialProvider implements CredentialProvider<BackupCo
 
         String response = credentialInput.getChallengeResponse();
 
-        // TODO: Do we need to handle the case where no backup codes are configured at this point in the execution?
-        CredentialModel credential = session.userCredentialManager().getStoredCredentialsByTypeStream(realm, user, getType()).findFirst().get();
+        Optional<CredentialModel> credential = session.userCredentialManager()
+                .getStoredCredentialsByTypeStream(realm, user, getType())
+                .findFirst();
 
-        BackupCodeCredentialModel backupCodeCredentialModel = BackupCodeCredentialModel.createFromCredentialModel(credential);
+        if (!credential.isPresent()) {
+            return false;
+        }
+
+        BackupCodeCredentialModel backupCodeCredentialModel = BackupCodeCredentialModel.createFromCredentialModel(credential.get());
 
         if (backupCodeCredentialModel.allCodesUsed()) {
             return false;
