@@ -4,6 +4,7 @@ import org.keycloak.credential.CredentialModel;
 import org.keycloak.models.credential.dto.BackupCode;
 import org.keycloak.models.credential.dto.BackupCodeCredentialData;
 import org.keycloak.models.credential.dto.BackupCodeSecretData;
+import org.keycloak.models.utils.BackupAuthnCodesUtils;
 import org.keycloak.util.JsonSerialization;
 
 import java.io.IOException;
@@ -41,9 +42,13 @@ public class BackupCodeCredentialModel extends CredentialModel {
         }
     }
 
-    public static BackupCodeCredentialModel createFromValues(String[] codes, long generatedAt, int hashIterations, String algorithm) {
-        BackupCodeSecretData secretData = new BackupCodeSecretData(toBackupCodes(codes));
-        BackupCodeCredentialData credentialData = new BackupCodeCredentialData(hashIterations, algorithm);
+    public static BackupCodeCredentialModel createFromValues(String[] originalGeneratedCodes,
+                                                             long generatedAt) {
+
+        BackupCodeSecretData secretData = new BackupCodeSecretData(toBackupCodes(originalGeneratedCodes));
+
+        BackupCodeCredentialData credentialData = new BackupCodeCredentialData(BackupAuthnCodesUtils.NUM_HASH_ITERATIONS,
+                                                                               BackupAuthnCodesUtils.NOM_ALGORITHM_TO_HASH);
 
         BackupCodeCredentialModel model = new BackupCodeCredentialModel(credentialData, secretData);
 
@@ -54,17 +59,18 @@ public class BackupCodeCredentialModel extends CredentialModel {
             model.setType(TYPE);
 
             return model;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static List<BackupCode> toBackupCodes(String[] codes) {
+    private static List<BackupCode> toBackupCodes(String[] rawGeneratedCodes) {
         List<BackupCode> backupCodes = new ArrayList<>();
 
-        for(int i = 0; i < codes.length; i++) {
-            backupCodes.add(new BackupCode(i + 1, codes[i]));
+        for (int i = 0; i < rawGeneratedCodes.length; i++) {
+            backupCodes.add(new BackupCode(i + 1,
+                                            rawGeneratedCodes[i],
+                                            BackupAuthnCodesUtils.hashRawCode(rawGeneratedCodes[i])));
         }
 
         return backupCodes;

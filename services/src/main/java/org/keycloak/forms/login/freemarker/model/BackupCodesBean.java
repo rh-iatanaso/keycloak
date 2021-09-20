@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 public class BackupCodesBean {
 
-    private static final int NUMBER_OF_CODES = 2;
+    private static final int NUMBER_OF_CODES = 5;
 
     private final List<String> codes;
     private final long generatedAt;

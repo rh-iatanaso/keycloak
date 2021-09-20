@@ -6,8 +6,6 @@ import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.credential.BackupCodeCredentialProviderFactory;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.events.Details;
-import org.keycloak.events.EventBuilder;
-import org.keycloak.events.EventType;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.BackupCodeCredentialModel;
 
@@ -28,25 +26,37 @@ public class BackupCodes implements RequiredActionProvider {
     @Override
     public void requiredActionChallenge(RequiredActionContext context) {
         Response challenge = context.form()
-                .createResponse(UserModel.RequiredAction.CONFIGURE_BACKUP_CODES);
+                                    .createResponse(UserModel.RequiredAction.CONFIGURE_BACKUP_CODES);
         context.challenge(challenge);
     }
 
     @Override
-    public void processAction(RequiredActionContext context) {
-        // TODO: Hash backupCodes
-        context.getEvent().detail(Details.CREDENTIAL_TYPE, BackupCodeCredentialModel.TYPE);
+    public void processAction(RequiredActionContext reqActionContext) {
+        MultivaluedMap<String, String> formDataMap;
+        String[] generatedCodesFromFormArray;
+        Long generatedAtTime;
+        BackupCodeCredentialModel bkpCodeCredentialModel;
+        CredentialProvider bkpCodeCredentialProvider;
 
-        MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
-        String[] codes = formData.getFirst("backupCodes").split(",");
-        long generatedAt = Long.parseLong(formData.getFirst("generatedAt"));
+        bkpCodeCredentialProvider = reqActionContext.getSession()
+                                                    .getProvider(CredentialProvider.class,
+                                                                 BackupCodeCredentialProviderFactory.PROVIDER_ID);
 
-        BackupCodeCredentialModel credentialModel = BackupCodeCredentialModel.createFromValues(codes, generatedAt, 0, "none");
+        reqActionContext.getEvent().detail(Details.CREDENTIAL_TYPE, BackupCodeCredentialModel.TYPE);
 
-        CredentialProvider provider = context.getSession().getProvider(CredentialProvider.class, BackupCodeCredentialProviderFactory.PROVIDER_ID);
-        provider.createCredential(context.getRealm(), context.getUser(), credentialModel);
+        formDataMap = reqActionContext.getHttpRequest().getDecodedFormParameters();
+        generatedCodesFromFormArray = formDataMap.getFirst("backupCodes").split(",");
+        generatedAtTime = Long.parseLong(formDataMap.getFirst("generatedAt"));
 
-        context.success();
+        bkpCodeCredentialModel = BackupCodeCredentialModel.createFromValues(generatedCodesFromFormArray,
+                                                                            generatedAtTime);
+
+
+        bkpCodeCredentialProvider.createCredential(reqActionContext.getRealm(),
+                                                   reqActionContext.getUser(),
+                                                   bkpCodeCredentialModel);
+
+        reqActionContext.success();
     }
 
     @Override

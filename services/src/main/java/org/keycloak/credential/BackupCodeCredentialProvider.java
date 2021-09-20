@@ -6,6 +6,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.BackupCodeCredentialModel;
+import org.keycloak.models.utils.BackupAuthnCodesUtils;
 
 import java.util.Optional;
 
@@ -68,9 +69,9 @@ public class BackupCodeCredentialProvider implements CredentialProvider<BackupCo
     @Override
     public boolean isConfiguredFor(RealmModel realm, UserModel user, String credentialType) {
         return session.userCredentialManager()
-                .getStoredCredentialsByTypeStream(realm, user, credentialType)
-                .findAny()
-                .isPresent();
+                      .getStoredCredentialsByTypeStream(realm, user, credentialType)
+                      .findAny()
+                      .isPresent();
     }
 
     @Override
@@ -81,11 +82,11 @@ public class BackupCodeCredentialProvider implements CredentialProvider<BackupCo
             return false;
         }
 
-        String response = credentialInput.getChallengeResponse();
+        String rawInputBackupCode = credentialInput.getChallengeResponse();
 
         Optional<CredentialModel> credential = session.userCredentialManager()
-                .getStoredCredentialsByTypeStream(realm, user, getType())
-                .findFirst();
+                                                      .getStoredCredentialsByTypeStream(realm, user, getType())
+                                                      .findFirst();
 
         if (!credential.isPresent()) {
             return false;
@@ -97,7 +98,9 @@ public class BackupCodeCredentialProvider implements CredentialProvider<BackupCo
             return false;
         }
 
-        if (backupCodeCredentialModel.getNextBackupCode().getValue().equals(response)) {
+        String hashedSavedBackupCode = backupCodeCredentialModel.getNextBackupCode().getEncodedHashedValue();
+
+        if (BackupAuthnCodesUtils.verifyBackupCodeInput(rawInputBackupCode, hashedSavedBackupCode)) {
             backupCodeCredentialModel.removeBackupCode();
             session.userCredentialManager().updateCredential(realm, user, backupCodeCredentialModel);
             return true;
