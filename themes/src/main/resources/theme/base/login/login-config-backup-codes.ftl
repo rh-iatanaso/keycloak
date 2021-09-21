@@ -6,7 +6,7 @@
     <#elseif section = "form">
         <ol id="kc-backup-codes-list">
             <#list backupCodes.codes as code>
-            <li>${code}</li>
+                <li>${code}</li>
             </#list>
         </ol>
 

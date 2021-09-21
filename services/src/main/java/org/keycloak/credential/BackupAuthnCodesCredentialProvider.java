@@ -5,29 +5,29 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserModel;
-import org.keycloak.models.credential.BackupCodeCredentialModel;
+import org.keycloak.models.credential.BackupAuthnCodesCredentialModel;
 import org.keycloak.models.utils.BackupAuthnCodesUtils;
 
 import java.util.Optional;
 
 
-public class BackupCodeCredentialProvider implements CredentialProvider<BackupCodeCredentialModel>, CredentialInputValidator {
+public class BackupAuthnCodesCredentialProvider implements CredentialProvider<BackupAuthnCodesCredentialModel>, CredentialInputValidator {
 
-    private static final Logger logger = Logger.getLogger(BackupCodeCredentialProvider.class);
+    private static final Logger logger = Logger.getLogger(BackupAuthnCodesCredentialProvider.class);
 
     private final KeycloakSession session;
 
-    BackupCodeCredentialProvider(KeycloakSession session) {
+    BackupAuthnCodesCredentialProvider(KeycloakSession session) {
         this.session = session;
     }
 
     @Override
     public String getType() {
-        return BackupCodeCredentialModel.TYPE;
+        return BackupAuthnCodesCredentialModel.TYPE;
     }
 
     @Override
-    public CredentialModel createCredential(RealmModel realm, UserModel user, BackupCodeCredentialModel credentialModel) {
+    public CredentialModel createCredential(RealmModel realm, UserModel user, BackupAuthnCodesCredentialModel credentialModel) {
         session.userCredentialManager()
                 .getStoredCredentialsByTypeStream(realm, user, getType())
                 .findFirst()
@@ -42,8 +42,8 @@ public class BackupCodeCredentialProvider implements CredentialProvider<BackupCo
     }
 
     @Override
-    public BackupCodeCredentialModel getCredentialFromModel(CredentialModel model) {
-        return BackupCodeCredentialModel.createFromCredentialModel(model);
+    public BackupAuthnCodesCredentialModel getCredentialFromModel(CredentialModel model) {
+        return BackupAuthnCodesCredentialModel.createFromCredentialModel(model);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class BackupCodeCredentialProvider implements CredentialProvider<BackupCo
             return false;
         }
 
-        BackupCodeCredentialModel backupCodeCredentialModel = BackupCodeCredentialModel.createFromCredentialModel(credential.get());
+        BackupAuthnCodesCredentialModel backupCodeCredentialModel = BackupAuthnCodesCredentialModel.createFromCredentialModel(credential.get());
 
         if (backupCodeCredentialModel.allCodesUsed()) {
             return false;

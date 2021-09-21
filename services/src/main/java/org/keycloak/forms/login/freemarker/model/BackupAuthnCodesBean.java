@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class BackupCodesBean {
+public class BackupAuthnCodesBean {
 
     private final List<String> codes;
     private final long generatedAt;
 
-    public BackupCodesBean() {
+    public BackupAuthnCodesBean() {
         this.codes = BackupAuthnCodesUtils.generateRawCodes();
         this.generatedAt = Time.currentTimeMillis();
     }

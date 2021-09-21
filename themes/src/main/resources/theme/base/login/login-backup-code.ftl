@@ -23,8 +23,8 @@
 
                 <div id="kc-form-buttons" class="${properties.kcFormButtonsClass!}">
                     <input
-                        class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}"
-                        name="login" id="kc-login" type="submit" value="${msg("doLogIn")}" />
+                            class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}"
+                            name="login" id="kc-login" type="submit" value="${msg("doLogIn")}" />
                 </div>
             </div>
         </form>

@@ -8,21 +8,17 @@ import org.keycloak.credential.CredentialModel;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserCredentialManager;
-import org.keycloak.models.UserCredentialModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.credential.BackupCodeCredentialModel;
+import org.keycloak.models.*;
+import org.keycloak.models.credential.BackupAuthnCodesCredentialModel;
 import org.keycloak.models.utils.FormMessage;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.util.Optional;
 
-public class BackupCodeFormAuthenticator implements Authenticator {
+public class BackupAuthnCodesFormAuthenticator implements Authenticator {
 
-    public BackupCodeFormAuthenticator() {
+    public BackupAuthnCodesFormAuthenticator() {
     }
 
     @Override
@@ -33,13 +29,14 @@ public class BackupCodeFormAuthenticator implements Authenticator {
     @Override
     public void action(AuthenticationFlowContext context) {
 
-        context.getEvent().detail(Details.CREDENTIAL_TYPE, BackupCodeCredentialModel.TYPE);
+        context.getEvent()
+               .detail(Details.CREDENTIAL_TYPE, BackupAuthnCodesCredentialModel.TYPE);
 
-        MultivaluedMap<String, String> params = context.getHttpRequest().getDecodedFormParameters();
+        MultivaluedMap<String, String> formParamsMap = context.getHttpRequest().getDecodedFormParameters();
 
-        String backupCode = params.getFirst("backupCode");
+        String backupAuthnCodeUserInput = formParamsMap.getFirst("backupCode");
 
-        if (ObjectUtil.isBlank(backupCode)) {
+        if (ObjectUtil.isBlank(backupAuthnCodeUserInput)) {
             context.forceChallenge(loginForm(context, true));
             return;
         }
@@ -47,7 +44,9 @@ public class BackupCodeFormAuthenticator implements Authenticator {
         RealmModel realm = context.getRealm();
         UserModel user = context.getUser();
 
-        boolean isValid = credentialManager(context).isValid(realm, user, UserCredentialModel.backupCode(backupCode));
+        boolean isValid = credentialManager(context).isValid(realm,
+                                                             user,
+                                                             UserCredentialModel.backupCode(backupAuthnCodeUserInput));
 
         if (!isValid) {
             Response challenge = loginForm(context, true);
@@ -56,18 +55,23 @@ public class BackupCodeFormAuthenticator implements Authenticator {
             return;
         }
 
-        Optional<CredentialModel> credential = credentialManager(context).getStoredCredentialsByTypeStream(realm, user, BackupCodeCredentialModel.TYPE).findFirst();
+        Optional<CredentialModel> credential = credentialManager(context).getStoredCredentialsByTypeStream(realm,
+                                                                                                           user,
+                                                                                                           BackupAuthnCodesCredentialModel.TYPE)
+                                                                         .findFirst();
 
         if (credential.isPresent()) {
-            BackupCodeCredentialModel backupCodeCredentialModel = BackupCodeCredentialModel.createFromCredentialModel(credential.get());
+            BackupAuthnCodesCredentialModel backupCodeCredentialModel = BackupAuthnCodesCredentialModel.createFromCredentialModel(credential.get());
 
             if (backupCodeCredentialModel.allCodesUsed()) {
                 credentialManager(context).removeStoredCredential(realm, user, backupCodeCredentialModel.getId());
                 user.addRequiredAction(UserModel.RequiredAction.CONFIGURE_BACKUP_CODES);
             }
-        }
-        else {
+
+        } else {
+
             user.addRequiredAction(UserModel.RequiredAction.CONFIGURE_BACKUP_CODES);
+
         }
 
         context.success();
@@ -97,7 +101,7 @@ public class BackupCodeFormAuthenticator implements Authenticator {
 
     @Override
     public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) {
-        return session.userCredentialManager().isConfiguredFor(realm, user, BackupCodeCredentialModel.TYPE);
+        return session.userCredentialManager().isConfiguredFor(realm, user, BackupAuthnCodesCredentialModel.TYPE);
     }
 
     @Override
