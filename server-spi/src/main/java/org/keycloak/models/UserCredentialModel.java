@@ -127,8 +127,8 @@ public class UserCredentialModel implements CredentialInput {
         return new UserCredentialModel("", SECRET, UUID.randomUUID().toString());
     }
 
-    public static UserCredentialModel backupCode(String code) {
-        return new UserCredentialModel("", BackupAuthnCodesCredentialModel.TYPE, code);
+    public static UserCredentialModel buildFromBackupAuthnCode(String backupAuthnCodeInput) {
+        return new UserCredentialModel("", BackupAuthnCodesCredentialModel.TYPE, backupAuthnCodeInput);
     }
 
     @Override

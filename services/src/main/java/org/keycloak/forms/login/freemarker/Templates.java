@@ -18,6 +18,7 @@
 package org.keycloak.forms.login.freemarker;
 
 import org.keycloak.forms.login.LoginFormsPages;
+import org.keycloak.models.utils.BackupAuthnCodesUtils;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -37,9 +38,9 @@ public class Templates {
             case LOGIN_CONFIG_TOTP:
                 return "login-config-totp.ftl";
             case LOGIN_BACKUP_CODE:
-                return "login-backup-code.ftl";
+                return BackupAuthnCodesUtils.NAM_TEMPLATE_LOGIN_INPUT_BACKUP_AUTHN_CODE;
             case LOGIN_CONFIG_BACKUP_CODES:
-                return "login-config-backup-codes.ftl";
+                return BackupAuthnCodesUtils.NAM_TEMPLATE_LOGIN_CONFIG_BACKUP_AUTHN_CODE;
             case LOGIN_WEBAUTHN:
                 return "webauthn-authenticate.ftl";
             case LOGIN_VERIFY_EMAIL:

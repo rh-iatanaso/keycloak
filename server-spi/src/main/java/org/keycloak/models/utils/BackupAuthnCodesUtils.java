@@ -1,20 +1,3 @@
-/*
- * Copyright 2016 Red Hat, Inc. and/or its affiliates
- * and other contributors as indicated by the @author tags.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.keycloak.models.utils;
 
 import org.keycloak.common.util.Base64;
@@ -30,16 +13,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * @author <a href="mailto:anascime@redhat.com">Andre Nascimento</a>
- */
 public class BackupAuthnCodesUtils {
 
-    private static final int NUMBER_OF_CODES = 5;
-    private static final RandomString randomString = new RandomString(4, new SecureRandom());
-    public static final int NUM_HASH_ITERATIONS = 1;
-    public static final String NOM_ALGORITHM_TO_HASH = Algorithm.RS256;
+    public static final int QUANTITY_OF_BACKUP_AUTHN_CODES_TO_GENERATE = 15;
+    public static final RandomString randomString = new RandomString(4, new SecureRandom());
+    public static final boolean SHOULD_SAVE_RAW_BACKUP_AUTHN_CODE = false;
 
+    public static final String NOM_ALGORITHM_TO_HASH = Algorithm.RS512;
+    public static final int NUM_HASH_ITERATIONS = 1;
+
+    public static final String NAM_TEMPLATE_LOGIN_INPUT_BACKUP_AUTHN_CODE  = "login-input-backup-authn-code.ftl";
+    public static final String NAM_TEMPLATE_LOGIN_CONFIG_BACKUP_AUTHN_CODE = "login-config-backup-authn-codes.ftl";
+    public static final String BACKUP_AUTHN_CODES_INPUT_DEFAULT_ERROR_MESSAGE = "backup-codes-error-invalid";
+    public static final String FIELD_BACKUP_CODE = "backupCode";
 
     public static String hashRawCode(String rawGeneratedCode) {
         String hashedCode = null;
@@ -66,7 +52,7 @@ public class BackupAuthnCodesUtils {
 
     public static List<String> generateRawCodes() {
         return Stream.generate(BackupAuthnCodesUtils::newCode)
-                     .limit(NUMBER_OF_CODES)
+                     .limit(QUANTITY_OF_BACKUP_AUTHN_CODES_TO_GENERATE)
                      .collect(Collectors.toList());
     }
 

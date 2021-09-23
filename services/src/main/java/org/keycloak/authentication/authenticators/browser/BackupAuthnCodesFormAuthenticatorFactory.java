@@ -57,8 +57,8 @@ public class BackupAuthnCodesFormAuthenticatorFactory implements AuthenticatorFa
     }
 
     @Override
-    public Authenticator create(KeycloakSession session) {
-        return new BackupAuthnCodesFormAuthenticator();
+    public Authenticator create(KeycloakSession keycloakSession) {
+        return new BackupAuthnCodesFormAuthenticator(keycloakSession);
     }
 
     @Override

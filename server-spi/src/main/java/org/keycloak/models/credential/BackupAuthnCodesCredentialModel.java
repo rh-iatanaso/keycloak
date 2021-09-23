@@ -13,7 +13,7 @@ import java.util.List;
 
 public class BackupAuthnCodesCredentialModel extends CredentialModel {
 
-    public static final String TYPE = "backup-authn-code";
+    public static final String TYPE = "backup-authn-codes";
 
     private final BackupAuthnCodesCredentialData credentialData;
     private final BackupAuthnCodesSecretData secretData;
@@ -70,8 +70,8 @@ public class BackupAuthnCodesCredentialModel extends CredentialModel {
 
         for (int i = 0; i < rawGeneratedCodes.length; i++) {
             backupAuthnCodeRepresentations.add(new BackupAuthnCodeRepresentation(i + 1,
-                                            rawGeneratedCodes[i],
-                                            BackupAuthnCodesUtils.hashRawCode(rawGeneratedCodes[i])));
+                                               (BackupAuthnCodesUtils.SHOULD_SAVE_RAW_BACKUP_AUTHN_CODE ? rawGeneratedCodes[i] : null),
+                                               BackupAuthnCodesUtils.hashRawCode(rawGeneratedCodes[i])));
         }
 
         return backupAuthnCodeRepresentations;
