@@ -73,6 +73,15 @@ public abstract class LanguageComboboxAwarePage extends AbstractPage {
         tryAnotherWayLink.click();
     }
 
+    public void assertAccountLinkAvailability(boolean expectedAvailability) {
+        try {
+            driver.findElement(By.id("account"));
+            Assert.assertTrue(expectedAvailability);
+        } catch (NoSuchElementException nse) {
+            Assert.assertFalse(expectedAvailability);
+        }
+    }
+
 
     // If false, we don't expect "attempted username" link available on the page. If true, we expect that it is available on the page
     public void assertAttemptedUsernameAvailability(boolean expectedAvailability) {
