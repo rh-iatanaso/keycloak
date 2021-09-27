@@ -34,22 +34,23 @@ public class BackupAuthnCodesCredentialModel extends CredentialModel {
 
     public void removeBackupCode() {
         try {
-
             this.secretData.removeNextBackupCode();
-            this.setSecretData(JsonSerialization.writeValueAsString(this.secretData));
+            this.credentialData.setRemainingCodes(this.secretData.getCodes().size());
 
+            this.setSecretData(JsonSerialization.writeValueAsString(this.secretData));
+            this.setCredentialData(JsonSerialization.writeValueAsString(this.credentialData));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static BackupAuthnCodesCredentialModel createFromValues(String[] originalGeneratedCodes,
-                                                                   long generatedAt) {
+    public static BackupAuthnCodesCredentialModel createFromValues(String[] originalGeneratedCodes, long generatedAt) {
 
         BackupAuthnCodesSecretData secretData = new BackupAuthnCodesSecretData(toBackupCodes(originalGeneratedCodes));
 
-        BackupAuthnCodesCredentialData credentialData = new BackupAuthnCodesCredentialData(BackupAuthnCodesUtils.NUM_HASH_ITERATIONS,
-                                                                               BackupAuthnCodesUtils.NOM_ALGORITHM_TO_HASH);
+        BackupAuthnCodesCredentialData credentialData = new BackupAuthnCodesCredentialData(
+                BackupAuthnCodesUtils.NUM_HASH_ITERATIONS, BackupAuthnCodesUtils.NOM_ALGORITHM_TO_HASH,
+                originalGeneratedCodes.length);
 
         BackupAuthnCodesCredentialModel model = new BackupAuthnCodesCredentialModel(credentialData, secretData);
 

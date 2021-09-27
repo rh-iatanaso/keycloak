@@ -8,11 +8,14 @@ public class BackupAuthnCodesCredentialData {
     private final int hashIterations;
     private final String algorithm;
 
+    private int remainingCodes;
+
     @JsonCreator
     public BackupAuthnCodesCredentialData(@JsonProperty("hashIterations") int hashIterations,
-                                          @JsonProperty("algorithm") String algorithm) {
+              @JsonProperty("algorithm") String algorithm, @JsonProperty("remaining") int remainingCodes) {
         this.hashIterations = hashIterations;
         this.algorithm = algorithm;
+        this.remainingCodes = remainingCodes;
     }
 
     public int getHashIterations() {
@@ -21,6 +24,14 @@ public class BackupAuthnCodesCredentialData {
 
     public String getAlgorithm() {
         return algorithm;
+    }
+
+    public int getRemainingCodes() {
+        return remainingCodes;
+    }
+
+    public void setRemainingCodes(int remainingCodes) {
+        this.remainingCodes = remainingCodes;
     }
 
 }
