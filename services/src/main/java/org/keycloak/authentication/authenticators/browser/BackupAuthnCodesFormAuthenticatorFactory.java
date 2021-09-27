@@ -14,7 +14,7 @@ import java.util.List;
 
 public class BackupAuthnCodesFormAuthenticatorFactory implements AuthenticatorFactory {
 
-    public static final String PROVIDER_ID = "auth-backup-authn-code-form";
+    public static final String PROVIDER_ID = "auth-backup-code-form";
 
     @Override
     public String getId() {

@@ -4,14 +4,16 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.page.Page;
 import org.junit.Test;
 import org.keycloak.authentication.AuthenticationFlow;
-import org.keycloak.authentication.authenticators.browser.*;
+import org.keycloak.authentication.authenticators.browser.BackupAuthnCodesFormAuthenticatorFactory;
+import org.keycloak.authentication.authenticators.browser.PasswordFormFactory;
+import org.keycloak.authentication.authenticators.browser.UsernameFormFactory;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.BackupAuthnCodesCredentialModel;
 import org.keycloak.models.utils.BackupAuthnCodesUtils;
-import org.keycloak.representations.idm.*;
+import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.testsuite.AbstractTestRealmKeycloakTest;
 import org.keycloak.testsuite.admin.ApiUtil;
 import org.keycloak.testsuite.client.KeycloakTestingClient;
@@ -50,6 +52,12 @@ public class BackupCodesAuthenticationTest extends AbstractTestRealmKeycloakTest
     @Page
     protected PasswordPage passwordPage;
 
+    @Page
+    protected LandingPage landingPage;
+
+    @Page
+    protected AuthenticationMethodSetupPage authenticationMethodSetupPage;
+
     @Override
     public void configureTestRealm(RealmRepresentation testRealm) {
 
@@ -86,7 +94,6 @@ public class BackupCodesAuthenticationTest extends AbstractTestRealmKeycloakTest
     public void testBackupCodes() {
         try {
             configureBrowserFlowWithBackupCodes(testingClient);
-
             loginUsernameOnlyPage.open();
             loginUsernameOnlyPage.assertAttemptedUsernameAvailability(false);
             loginUsernameOnlyPage.login("test-user@localhost");
@@ -94,10 +101,7 @@ public class BackupCodesAuthenticationTest extends AbstractTestRealmKeycloakTest
             passwordPage.assertCurrent();
             passwordPage.assertAttemptedUsernameAvailability(true);
             Assert.assertEquals("test-user@localhost", passwordPage.getAttemptedUsername());
-            //passwordPage.login("password");
-
             passwordPage.assertTryAnotherWayLinkAvailability(true);
-
             List<String> backupCodes = BackupAuthnCodesUtils.generateRawCodes();
             testingClient.server().run(session -> {
                 RealmModel realm = session.realms().getRealmByName("test");
@@ -105,7 +109,6 @@ public class BackupCodesAuthenticationTest extends AbstractTestRealmKeycloakTest
                 CredentialModel backupCred = BackupAuthnCodesCredentialModel.createFromValues(backupCodes.stream().toArray(String[]::new),System.currentTimeMillis());
                 session.userCredentialManager().createCredential(realm, user, backupCred);
             });
-
             passwordPage.clickTryAnotherWayLink();
             selectAuthenticatorPage.assertCurrent();
             Assert.assertEquals(Arrays.asList(SelectAuthenticatorPage.PASSWORD, SelectAuthenticatorPage.BACKUP_CODES), selectAuthenticatorPage.getAvailableLoginMethods());
@@ -115,6 +118,16 @@ public class BackupCodesAuthenticationTest extends AbstractTestRealmKeycloakTest
             enterBackupCodePage.clickSignInButton();
             enterBackupCodePage.assertAccountLinkAvailability(true);
         } finally {
+            // Remove save backup codes to keep a clean slate after this test
+            enterBackupCodePage.assertAccountLinkAvailability(true);
+            enterBackupCodePage.clickAccountLink();
+            landingPage.assertCurrent();
+            landingPage.clickSigningInLink();
+            authenticationMethodSetupPage.assertCurrent();
+            authenticationMethodSetupPage.clickRemoveBackupCodesLink();
+            authenticationMethodSetupPage.clickConfirmButton();
+            authenticationMethodSetupPage.assertCurrent();
+            // Revert copy of browser flow to original to keep clean slate after this test
             BrowserFlowTest.revertFlows(testRealm(), BROWSER_FLOW_WITH_BACKUP_CODES);
         }
     }
