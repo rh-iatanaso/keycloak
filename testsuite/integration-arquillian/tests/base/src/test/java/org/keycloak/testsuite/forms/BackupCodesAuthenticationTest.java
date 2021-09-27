@@ -106,7 +106,10 @@ public class BackupCodesAuthenticationTest extends AbstractTestRealmKeycloakTest
             testingClient.server().run(session -> {
                 RealmModel realm = session.realms().getRealmByName("test");
                 UserModel user = session.users().getUserByUsername(realm, "test-user@localhost");
-                CredentialModel backupCred = BackupAuthnCodesCredentialModel.createFromValues(backupCodes.stream().toArray(String[]::new),System.currentTimeMillis());
+                CredentialModel backupCred = BackupAuthnCodesCredentialModel.createFromValues(
+                        backupCodes.stream().toArray(String[]::new),
+                        System.currentTimeMillis(),
+                        null);
                 session.userCredentialManager().createCredential(realm, user, backupCred);
             });
             passwordPage.clickTryAnotherWayLink();

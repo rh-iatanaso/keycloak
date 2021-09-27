@@ -68,26 +68,22 @@ public class BackupAuthnCodesAction implements RequiredActionProvider, RequiredA
 
     @Override
     public void processAction(RequiredActionContext reqActionContext) {
-        MultivaluedMap<String, String> formDataMap;
-        String[] generatedCodesFromFormArray;
-        Long generatedAtTime;
-        BackupAuthnCodesCredentialModel bkpCodeCredentialModel;
-        CredentialProvider bkpCodeCredentialProvider;
-
-        bkpCodeCredentialProvider = reqActionContext.getSession()
-                                                    .getProvider(CredentialProvider.class,
-                                                                 BackupAuthnCodesCredentialProviderFactory.PROVIDER_ID);
+        CredentialProvider bkpCodeCredentialProvider = reqActionContext
+                .getSession()
+                .getProvider(
+                        CredentialProvider.class,
+                        BackupAuthnCodesCredentialProviderFactory.PROVIDER_ID);
 
         reqActionContext.getEvent().detail(Details.CREDENTIAL_TYPE, BackupAuthnCodesCredentialModel.TYPE);
 
-        formDataMap = reqActionContext.getHttpRequest().getDecodedFormParameters();
-        generatedCodesFromFormArray = formDataMap.getFirst("backupCodes").split(",");
-        generatedAtTime = Long.parseLong(formDataMap.getFirst("generatedAt"));
-
-        bkpCodeCredentialModel = BackupAuthnCodesCredentialModel.createFromValues(generatedCodesFromFormArray,
-                                                                                  generatedAtTime);
-
-
+        MultivaluedMap<String,String> formDataMap = reqActionContext.getHttpRequest().getDecodedFormParameters();
+        String[] generatedCodesFromFormArray = formDataMap.getFirst("backupCodes").split(",");
+        Long generatedAtTime = Long.parseLong(formDataMap.getFirst("generatedAt"));
+        String generatedUserLabel = formDataMap.getFirst("userLabel");
+        BackupAuthnCodesCredentialModel bkpCodeCredentialModel = BackupAuthnCodesCredentialModel.createFromValues(
+                generatedCodesFromFormArray,
+                generatedAtTime,
+                generatedUserLabel);
         bkpCodeCredentialProvider.createCredential(reqActionContext.getRealm(),
                                                    reqActionContext.getUser(),
                                                    bkpCodeCredentialModel);

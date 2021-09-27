@@ -15,6 +15,7 @@
         <form action="${url.loginAction}" class="${properties.kcFormClass!}" id="kc-backup-codes-settings-form" method="post">
             <input type="hidden" name="backupCodes" value="${backupCodes.backupCodesList}" />
             <input type="hidden" name="generatedAt" value="${backupCodes.generatedAt?c}" />
+            <input type="hidden" name="userLabel" value="${msg("backup-code-config-user-label")}" />
 
             <#if isAppInitiatedAction??>
                 <input type="submit"

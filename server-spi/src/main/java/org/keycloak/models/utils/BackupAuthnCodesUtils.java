@@ -16,7 +16,10 @@ import java.util.stream.Stream;
 public class BackupAuthnCodesUtils {
 
     public static final int QUANTITY_OF_BACKUP_AUTHN_CODES_TO_GENERATE = 15;
-    public static final RandomString randomString = new RandomString(4, new SecureRandom());
+    private static final RandomString randomString = new RandomString(
+            4,
+            new SecureRandom(),
+            RandomString.upper+RandomString.digits);
     public static final boolean SHOULD_SAVE_RAW_BACKUP_AUTHN_CODE = false;
 
     public static final String NOM_ALGORITHM_TO_HASH = Algorithm.RS512;

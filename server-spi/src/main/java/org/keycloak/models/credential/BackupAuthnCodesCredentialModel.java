@@ -44,7 +44,10 @@ public class BackupAuthnCodesCredentialModel extends CredentialModel {
         }
     }
 
-    public static BackupAuthnCodesCredentialModel createFromValues(String[] originalGeneratedCodes, long generatedAt) {
+    public static BackupAuthnCodesCredentialModel createFromValues(
+            String[] originalGeneratedCodes,
+            long generatedAt,
+            String userLabel) {
 
         BackupAuthnCodesSecretData secretData = new BackupAuthnCodesSecretData(toBackupCodes(originalGeneratedCodes));
 
@@ -59,7 +62,9 @@ public class BackupAuthnCodesCredentialModel extends CredentialModel {
             model.setSecretData(JsonSerialization.writeValueAsString(secretData));
             model.setCreatedDate(generatedAt);
             model.setType(TYPE);
-
+            if (userLabel != null) {
+                model.setUserLabel(userLabel);
+            }
             return model;
         } catch (IOException e) {
             throw new RuntimeException(e);
