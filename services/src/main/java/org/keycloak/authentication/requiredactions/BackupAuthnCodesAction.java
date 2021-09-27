@@ -77,8 +77,11 @@ public class BackupAuthnCodesAction implements RequiredActionProvider, RequiredA
         reqActionContext.getEvent().detail(Details.CREDENTIAL_TYPE, BackupAuthnCodesCredentialModel.TYPE);
 
         MultivaluedMap<String,String> formDataMap = reqActionContext.getHttpRequest().getDecodedFormParameters();
+        // TODO Validation iatanaso
         String[] generatedCodesFromFormArray = formDataMap.getFirst("backupCodes").split(",");
+        // TODO Validation iatanaso
         Long generatedAtTime = Long.parseLong(formDataMap.getFirst("generatedAt"));
+        // TODO Validation iatanaso
         String generatedUserLabel = formDataMap.getFirst("userLabel");
         BackupAuthnCodesCredentialModel bkpCodeCredentialModel = BackupAuthnCodesCredentialModel.createFromValues(
                 generatedCodesFromFormArray,
