@@ -14,6 +14,7 @@ import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.BackupAuthnCodesCredentialModel;
 import org.keycloak.models.utils.BackupAuthnCodesUtils;
 import org.keycloak.representations.idm.RealmRepresentation;
+import org.keycloak.representations.idm.RequiredActionProviderSimpleRepresentation;
 import org.keycloak.testsuite.AbstractTestRealmKeycloakTest;
 import org.keycloak.testsuite.admin.ApiUtil;
 import org.keycloak.testsuite.client.KeycloakTestingClient;
@@ -45,6 +46,9 @@ public class BackupCodesAuthenticationTest extends AbstractTestRealmKeycloakTest
 
     @Page
     protected EnterBackupCodePage enterBackupCodePage;
+
+    @Page
+    protected SetupBackupCodesPage setupBackupCodesPage;
 
     @Page
     protected SelectAuthenticatorPage selectAuthenticatorPage;
@@ -83,15 +87,12 @@ public class BackupCodesAuthenticationTest extends AbstractTestRealmKeycloakTest
         );
 
         ApiUtil.removeUserByUsername(testRealm(), "test-user@localhost");
-
         String userId = createUser("test", "test-user@localhost", "password", UserModel.RequiredAction.CONFIGURE_BACKUP_CODES.name());
-        //ApiUtil.createUserAndResetPasswordWithAdminClient(testRealm(), user, "password");
-        setRequiredActionEnabled("test", userId, UserModel.RequiredAction.CONFIGURE_BACKUP_CODES.name(), true);
     }
 
-    // In a sub-flow with alternative credential executors, test whether backup codes are working
+    // In a sub-flow with alternative credential executors, test whether backup codes authentication is working
     @Test
-    public void testBackupCodes() {
+    public void testAuthenticateBackupCodes() {
         try {
             configureBrowserFlowWithBackupCodes(testingClient);
             loginUsernameOnlyPage.open();
@@ -121,7 +122,7 @@ public class BackupCodesAuthenticationTest extends AbstractTestRealmKeycloakTest
             enterBackupCodePage.clickSignInButton();
             enterBackupCodePage.assertAccountLinkAvailability(true);
         } finally {
-            // Remove save backup codes to keep a clean slate after this test
+            // Remove saved backup codes to keep a clean slate after this test
             enterBackupCodePage.assertAccountLinkAvailability(true);
             enterBackupCodePage.clickAccountLink();
             landingPage.assertCurrent();
@@ -130,6 +131,42 @@ public class BackupCodesAuthenticationTest extends AbstractTestRealmKeycloakTest
             authenticationMethodSetupPage.clickRemoveBackupCodesLink();
             authenticationMethodSetupPage.clickConfirmButton();
             authenticationMethodSetupPage.assertCurrent();
+            // Revert copy of browser flow to original to keep clean slate after this test
+            BrowserFlowTest.revertFlows(testRealm(), BROWSER_FLOW_WITH_BACKUP_CODES);
+        }
+    }
+
+    //// In a sub-flow with alternative credential executors, test whether setup backup codes flow is working
+    @Test
+    public void testSetupBackupCodes() {
+        try {
+            configureBrowserFlowWithBackupCodes(testingClient);
+            RequiredActionProviderSimpleRepresentation simpleRepresentation = new RequiredActionProviderSimpleRepresentation();
+            simpleRepresentation.setProviderId(UserModel.RequiredAction.CONFIGURE_BACKUP_CODES.name());
+            simpleRepresentation.setName(UserModel.RequiredAction.CONFIGURE_BACKUP_CODES.name());
+            testRealm().flows().registerRequiredAction(simpleRepresentation);
+            loginUsernameOnlyPage.open();
+            loginUsernameOnlyPage.assertAttemptedUsernameAvailability(false);
+            loginUsernameOnlyPage.login("test-user@localhost");
+            // On the password page, username should be shown as we know the user
+            passwordPage.assertCurrent();
+            //passwordPage.assertAttemptedUsernameAvailability(true);
+            Assert.assertEquals("test-user@localhost", passwordPage.getAttemptedUsername());
+            passwordPage.login("password");
+            setupBackupCodesPage.assertCurrent();
+            setupBackupCodesPage.getBackupCodes().forEach( backupCode -> System.out.println(backupCode) );
+            setupBackupCodesPage.clickSaveBackupCodesButton();
+        } finally {
+            // Remove saved backup codes to keep a clean slate after this test
+            setupBackupCodesPage.assertAccountLinkAvailability(true);
+            setupBackupCodesPage.clickAccountLink();
+            landingPage.assertCurrent();
+            landingPage.clickSigningInLink();
+            authenticationMethodSetupPage.assertCurrent();
+            authenticationMethodSetupPage.clickRemoveBackupCodesLink();
+            authenticationMethodSetupPage.clickConfirmButton();
+            authenticationMethodSetupPage.assertCurrent();
+            testRealm().flows().removeRequiredAction(UserModel.RequiredAction.CONFIGURE_BACKUP_CODES.name());
             // Revert copy of browser flow to original to keep clean slate after this test
             BrowserFlowTest.revertFlows(testRealm(), BROWSER_FLOW_WITH_BACKUP_CODES);
         }
