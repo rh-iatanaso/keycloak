@@ -19,7 +19,7 @@ public class RecoveryAuthnCodeInputLoginBean {
 
         RecoveryAuthnCodesCredentialModel recoveryCodeCredentialModel = RecoveryAuthnCodesCredentialModel.createFromCredentialModel(credentialModel);
 
-        this.codeNumber = recoveryCodeCredentialModel.getNextBackupCode().getNumber();
+        this.codeNumber = recoveryCodeCredentialModel.getNextRecoveryAuthnCode().getNumber();
     }
 
     public int getCodeNumber() {

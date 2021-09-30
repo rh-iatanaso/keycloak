@@ -31,7 +31,7 @@ public class RecoveryAuthnCodesUtils {
     public static final String FIELD_GENERATED_RECOVERY_AUTHN_CODES_HIDDEN = "generatedRecoveryAuthnCodes";
     public static final String FIELD_GENERATED_AT_HIDDEN = "generatedAt";
     public static final String FIELD_USER_LABEL_HIDDEN = "userLabel";
-    public static final String FIELD_RECOVERY_CODE_IN_DIRECT_GRANT_FLOW = "recovery-code";
+    public static final String FIELD_RECOVERY_CODE_IN_DIRECT_GRANT_FLOW = "recovery_code";
 
     public static String hashRawCode(String rawGeneratedCode) {
         String hashedCode = null;

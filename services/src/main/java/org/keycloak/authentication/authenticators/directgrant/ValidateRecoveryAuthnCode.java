@@ -112,8 +112,6 @@ public class ValidateRecoveryAuthnCode extends AbstractDirectGrantAuthenticator 
 
             }
 
-            // return;
-
         } else {
 
             recoveryAuthnCodesCredentialProvider = getCredentialProvider(authnFlowContext.getSession());
@@ -121,11 +119,6 @@ public class ValidateRecoveryAuthnCode extends AbstractDirectGrantAuthenticator 
             httpReqParamsMap = authnFlowContext.getHttpRequest().getDecodedFormParameters();
 
             backupCodeInputValue = httpReqParamsMap.getFirst(RecoveryAuthnCodesUtils.FIELD_RECOVERY_CODE_IN_DIRECT_GRANT_FLOW);
-
-            credentialId = recoveryAuthnCodesCredentialProvider.getDefaultCredential(authnFlowContext.getSession(),
-                                                                                   authnFlowContext.getRealm(),
-                                                                                   authnFlowContext.getUser())
-                                                             .getId();
 
             if (StringUtils.isEmpty(backupCodeInputValue)) {
 
@@ -138,6 +131,11 @@ public class ValidateRecoveryAuthnCode extends AbstractDirectGrantAuthenticator 
                 shouldRaiseFailure = true;
 
             } else {
+
+                credentialId = recoveryAuthnCodesCredentialProvider.getDefaultCredential(authnFlowContext.getSession(),
+                                                                                         authnFlowContext.getRealm(),
+                                                                                         authnFlowContext.getUser())
+                                                                   .getId();
 
                 isBackupCodeInputValid = recoveryAuthnCodesCredentialProvider.isValid(authnFlowContext.getRealm(),
                                                                                     authnFlowContext.getUser(),

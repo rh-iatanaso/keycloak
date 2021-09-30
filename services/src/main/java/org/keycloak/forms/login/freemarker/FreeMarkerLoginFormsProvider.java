@@ -551,7 +551,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
     }
 
     @Override
-    public Response createLoginBackupCode() {
+    public Response createLoginRecoveryAuthnCode() {
         return createResponse(LoginFormsPages.LOGIN_RECOVERY_AUTHN_CODES_INPUT);
     }
 

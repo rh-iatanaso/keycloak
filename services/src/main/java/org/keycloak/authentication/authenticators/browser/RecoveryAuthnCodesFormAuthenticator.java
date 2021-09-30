@@ -46,13 +46,13 @@ public class RecoveryAuthnCodesFormAuthenticator implements Authenticator {
         context.getEvent()
                .detail(Details.CREDENTIAL_TYPE, RecoveryAuthnCodesCredentialModel.TYPE);
 
-        if (isBackupAuthnCodeInputValid(context)) {
+        if (isRecoveryAuthnCodeInputValid(context)) {
             context.success();
         }
 
     }
 
-    private boolean isBackupAuthnCodeInputValid(AuthenticationFlowContext authnFlowContext) {
+    private boolean isRecoveryAuthnCodeInputValid(AuthenticationFlowContext authnFlowContext) {
         boolean bolResult = false;
         MultivaluedMap<String, String> formParamsMap;
         String recoveryAuthnCodeUserInput;
@@ -189,7 +189,7 @@ public class RecoveryAuthnCodesFormAuthenticator implements Authenticator {
             }
         }
 
-        challengeResponse = loginFormsProvider.createLoginBackupCode();
+        challengeResponse = loginFormsProvider.createLoginRecoveryAuthnCode();
 
         return challengeResponse;
     }
