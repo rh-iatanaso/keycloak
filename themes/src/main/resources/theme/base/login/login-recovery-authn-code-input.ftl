@@ -2,16 +2,16 @@
 <@layout.registrationLayout; section>
 
     <#if section = "header">
-        ${msg("auth-backup-code-header")}
+        ${msg("auth-recovery-code-header")}
     <#elseif section = "form">
-        <form id="kc-backup-code-login-form" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
+        <form id="kc-recovery-code-login-form" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
             <div class="${properties.kcFormGroupClass!}">
                 <div class="${properties.kcLabelWrapperClass!}">
-                    <label for="backupCode" class="${properties.kcLabelClass!}">${msg("auth-backup-code-prompt", backupCodes.codeNumber?c)}</label>
+                    <label for="recoveryCodeInput" class="${properties.kcLabelClass!}">${msg("auth-recovery-code-prompt", recoveryAuthnCodesInputBean.codeNumber?c)}</label>
                 </div>
 
                 <div class="${properties.kcInputWrapperClass!}">
-                    <input id="backupCode" name="backupCode" autocomplete="off" type="text" class="${properties.kcInputClass!}" autofocus/>
+                    <input id="recoveryCodeInput" name="recoveryCodeInput" autocomplete="off" type="text" class="${properties.kcInputClass!}" autofocus/>
                 </div>
             </div>
 

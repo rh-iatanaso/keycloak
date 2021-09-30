@@ -6,7 +6,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
 /**
- * Setup page for various authentication methods(Password/OTP/Backup Codes etc.)
+ * Setup page for various authentication methods(Password/OTP/RecoveryAuthnCodes etc.)
  *
  * @author <a href="mailto:vnukala@redhat.com">Venkata Nukala</a>
  */
@@ -18,8 +18,8 @@ public class AuthenticationMethodSetupPage extends LanguageComboboxAwarePage {
     @FindBy(id = "two-factor-categ-title")
     private WebElement twoFactorCategoryTitle;
 
-    @FindBy(css = "[id^=backup-authn-codes-remove]")
-    private WebElement removeBackupCodesLink;
+    @FindBy(css = "[id^=recovery-authn-codes-remove]")
+    private WebElement removeRecoveryAuthnCodesLink;
 
     @FindBy(xpath = "//*[@id='modal-confirm']")
     private WebElement confirmBtn;
@@ -28,7 +28,7 @@ public class AuthenticationMethodSetupPage extends LanguageComboboxAwarePage {
     private WebElement cancelBtn;
 
     public void clickRemoveBackupCodesLink() {
-        removeBackupCodesLink.click();
+        removeRecoveryAuthnCodesLink.click();
     }
 
     public void clickConfirmButton() {

@@ -10,8 +10,8 @@ import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.*;
-import org.keycloak.models.credential.BackupAuthnCodesCredentialModel;
-import org.keycloak.models.utils.BackupAuthnCodesUtils;
+import org.keycloak.models.credential.RecoveryAuthnCodesCredentialModel;
+import org.keycloak.models.utils.RecoveryAuthnCodesUtils;
 import org.keycloak.models.utils.FormMessage;
 import org.keycloak.services.messages.Messages;
 
@@ -21,18 +21,18 @@ import java.util.Optional;
 
 import static org.keycloak.services.validation.Validation.FIELD_USERNAME;
 
-public class BackupAuthnCodesFormAuthenticator implements Authenticator {
+public class RecoveryAuthnCodesFormAuthenticator implements Authenticator {
 
     private final UserCredentialManager userCredentialManager;
 
 
-    public BackupAuthnCodesFormAuthenticator(KeycloakSession keycloakSession) {
+    public RecoveryAuthnCodesFormAuthenticator(KeycloakSession keycloakSession) {
         this.userCredentialManager = keycloakSession.userCredentialManager();
     }
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
-        // context.challenge(loginForm(context, false));
+
         context.challenge(createLoginForm(context,
                                          false,
                                           null,
@@ -44,7 +44,7 @@ public class BackupAuthnCodesFormAuthenticator implements Authenticator {
     public void action(AuthenticationFlowContext context) {
 
         context.getEvent()
-               .detail(Details.CREDENTIAL_TYPE, BackupAuthnCodesCredentialModel.TYPE);
+               .detail(Details.CREDENTIAL_TYPE, RecoveryAuthnCodesCredentialModel.TYPE);
 
         if (isBackupAuthnCodeInputValid(context)) {
             context.success();
@@ -55,24 +55,24 @@ public class BackupAuthnCodesFormAuthenticator implements Authenticator {
     private boolean isBackupAuthnCodeInputValid(AuthenticationFlowContext authnFlowContext) {
         boolean bolResult = false;
         MultivaluedMap<String, String> formParamsMap;
-        String backupAuthnCodeUserInput;
+        String recoveryAuthnCodeUserInput;
         RealmModel targetRealm;
         UserModel authenticatedUser;
         Response responseChallenge;
         boolean isValid;
         Optional<CredentialModel> optUserCredentialFound;
-        BackupAuthnCodesCredentialModel backupCodeCredentialModel = null;
+        RecoveryAuthnCodesCredentialModel recoveryCodeCredentialModel = null;
 
         formParamsMap = authnFlowContext.getHttpRequest().getDecodedFormParameters();
 
-        backupAuthnCodeUserInput = formParamsMap.getFirst(BackupAuthnCodesUtils.FIELD_BACKUP_CODE);
+        recoveryAuthnCodeUserInput = formParamsMap.getFirst(RecoveryAuthnCodesUtils.FIELD_RECOVERY_CODE_IN_BROWSER_FLOW);
 
-        if (ObjectUtil.isBlank(backupAuthnCodeUserInput)) {
+        if (ObjectUtil.isBlank(recoveryAuthnCodeUserInput)) {
 
             authnFlowContext.forceChallenge(createLoginForm(authnFlowContext,
                                                             true,
-                                                            BackupAuthnCodesUtils.BACKUP_AUTHN_CODES_INPUT_DEFAULT_ERROR_MESSAGE,
-                                                            BackupAuthnCodesUtils.FIELD_BACKUP_CODE));
+                                                            RecoveryAuthnCodesUtils.RECOVERY_AUTHN_CODES_INPUT_DEFAULT_ERROR_MESSAGE,
+                                                            RecoveryAuthnCodesUtils.FIELD_RECOVERY_CODE_IN_BROWSER_FLOW));
 
         } else {
 
@@ -83,14 +83,14 @@ public class BackupAuthnCodesFormAuthenticator implements Authenticator {
 
                 isValid = this.userCredentialManager.isValid(targetRealm,
                                                              authenticatedUser,
-                                                             UserCredentialModel.buildFromBackupAuthnCode(backupAuthnCodeUserInput));
+                                                             UserCredentialModel.buildFromBackupAuthnCode(recoveryAuthnCodeUserInput));
 
                 if (!isValid) {
 
                     responseChallenge = createLoginForm(authnFlowContext,
                                                         true,
-                                                        BackupAuthnCodesUtils.BACKUP_AUTHN_CODES_INPUT_DEFAULT_ERROR_MESSAGE,
-                                                        BackupAuthnCodesUtils.FIELD_BACKUP_CODE);
+                                                        RecoveryAuthnCodesUtils.RECOVERY_AUTHN_CODES_INPUT_DEFAULT_ERROR_MESSAGE,
+                                                        RecoveryAuthnCodesUtils.FIELD_RECOVERY_CODE_IN_BROWSER_FLOW);
                     authnFlowContext.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, responseChallenge);
 
                 } else {
@@ -99,26 +99,26 @@ public class BackupAuthnCodesFormAuthenticator implements Authenticator {
 
                     optUserCredentialFound = this.userCredentialManager.getStoredCredentialsByTypeStream(targetRealm,
                                                                                                          authenticatedUser,
-                                                                                                         BackupAuthnCodesCredentialModel.TYPE)
+                                                                                                         RecoveryAuthnCodesCredentialModel.TYPE)
                                                                        .findFirst();
 
                     if (optUserCredentialFound.isPresent()) {
 
-                        backupCodeCredentialModel = BackupAuthnCodesCredentialModel.createFromCredentialModel(optUserCredentialFound.get());
+                        recoveryCodeCredentialModel = RecoveryAuthnCodesCredentialModel.createFromCredentialModel(optUserCredentialFound.get());
 
-                        if (backupCodeCredentialModel.allCodesUsed()) {
+                        if (recoveryCodeCredentialModel.allCodesUsed()) {
 
                             this.userCredentialManager.removeStoredCredential(targetRealm,
                                                                               authenticatedUser,
-                                                                              backupCodeCredentialModel.getId());
+                                                                              recoveryCodeCredentialModel.getId());
 
                         }
 
                     }
 
-                    if (backupCodeCredentialModel == null || backupCodeCredentialModel.allCodesUsed()) {
+                    if (recoveryCodeCredentialModel == null || recoveryCodeCredentialModel.allCodesUsed()) {
 
-                        authenticatedUser.addRequiredAction(UserModel.RequiredAction.CONFIGURE_BACKUP_CODES);
+                        authenticatedUser.addRequiredAction(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES);
 
                     }
 
@@ -201,12 +201,12 @@ public class BackupAuthnCodesFormAuthenticator implements Authenticator {
 
     @Override
     public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) {
-        return session.userCredentialManager().isConfiguredFor(realm, user, BackupAuthnCodesCredentialModel.TYPE);
+        return session.userCredentialManager().isConfiguredFor(realm, user, RecoveryAuthnCodesCredentialModel.TYPE);
     }
 
     @Override
     public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
-        user.addRequiredAction(UserModel.RequiredAction.CONFIGURE_BACKUP_CODES.name());
+        user.addRequiredAction(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES.name());
     }
 
     @Override

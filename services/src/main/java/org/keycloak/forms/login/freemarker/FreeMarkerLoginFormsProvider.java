@@ -27,8 +27,8 @@ import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.forms.login.LoginFormsPages;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.forms.login.freemarker.model.AuthenticationContextBean;
-import org.keycloak.forms.login.freemarker.model.BackupAuthnCodeInputLoginBean;
-import org.keycloak.forms.login.freemarker.model.BackupAuthnCodesBean;
+import org.keycloak.forms.login.freemarker.model.RecoveryAuthnCodeInputLoginBean;
+import org.keycloak.forms.login.freemarker.model.RecoveryAuthnCodesBean;
 import org.keycloak.forms.login.freemarker.model.ClientBean;
 import org.keycloak.forms.login.freemarker.model.CodeBean;
 import org.keycloak.forms.login.freemarker.model.IdentityProviderBean;
@@ -149,9 +149,9 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
                 actionMessage = Messages.CONFIGURE_TOTP;
                 page = LoginFormsPages.LOGIN_CONFIG_TOTP;
                 break;
-            case CONFIGURE_BACKUP_CODES:
+            case CONFIGURE_RECOVERY_AUTHN_CODES:
                 actionMessage = Messages.CONFIGURE_BACKUP_CODES;
-                page = LoginFormsPages.LOGIN_CONFIG_BACKUP_CODES;
+                page = LoginFormsPages.LOGIN_RECOVERY_AUTHN_CODES_CONFIG;
                 break;
             case UPDATE_PROFILE:
                 UpdateProfileContext userBasedContext = new UserUpdateProfileContext(realm, user);
@@ -220,11 +220,11 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
             case LOGIN_CONFIG_TOTP:
                 attributes.put("totp", new TotpBean(session, realm, user, uriInfo.getRequestUriBuilder()));
                 break;
-            case LOGIN_CONFIG_BACKUP_CODES:
-                attributes.put("backupCodes", new BackupAuthnCodesBean());
+            case LOGIN_RECOVERY_AUTHN_CODES_CONFIG:
+                attributes.put("recoveryAuthnCodesConfigBean", new RecoveryAuthnCodesBean());
                 break;
-            case LOGIN_BACKUP_CODE:
-                attributes.put("backupCodes", new BackupAuthnCodeInputLoginBean(session, realm, user));
+            case LOGIN_RECOVERY_AUTHN_CODES_INPUT:
+                attributes.put("recoveryAuthnCodesInputBean", new RecoveryAuthnCodeInputLoginBean(session, realm, user));
                 break;
             case LOGIN_UPDATE_PROFILE:
                 UpdateProfileContext userCtx = (UpdateProfileContext) attributes.get(LoginFormsProvider.UPDATE_PROFILE_CONTEXT_ATTR);
@@ -552,7 +552,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
 
     @Override
     public Response createLoginBackupCode() {
-        return createResponse(LoginFormsPages.LOGIN_BACKUP_CODE);
+        return createResponse(LoginFormsPages.LOGIN_RECOVERY_AUTHN_CODES_INPUT);
     }
 
     @Override

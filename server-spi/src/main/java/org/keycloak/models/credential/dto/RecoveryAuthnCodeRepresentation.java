@@ -5,16 +5,16 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BackupAuthnCodeRepresentation {
+public class RecoveryAuthnCodeRepresentation {
 
     private final int number;
     private final String plainTextValue;
     private final String encodedHashedValue;
 
     @JsonCreator
-    public BackupAuthnCodeRepresentation(@JsonProperty("number") int number,
-                                         @JsonProperty("plainTextValue") String plainTextValue,
-                                         @JsonProperty("encodedHashedValue") String encodedHashedValue) {
+    public RecoveryAuthnCodeRepresentation(@JsonProperty("number") int number,
+                                           @JsonProperty("plainTextValue") String plainTextValue,
+                                           @JsonProperty("encodedHashedValue") String encodedHashedValue) {
         this.number = number;
         this.plainTextValue = plainTextValue;
         this.encodedHashedValue = encodedHashedValue;

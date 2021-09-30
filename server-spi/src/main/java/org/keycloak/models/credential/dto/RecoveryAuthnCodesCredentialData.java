@@ -3,7 +3,7 @@ package org.keycloak.models.credential.dto;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class BackupAuthnCodesCredentialData {
+public class RecoveryAuthnCodesCredentialData {
 
     private final int hashIterations;
     private final String algorithm;
@@ -11,8 +11,8 @@ public class BackupAuthnCodesCredentialData {
     private int remainingCodes;
 
     @JsonCreator
-    public BackupAuthnCodesCredentialData(@JsonProperty("hashIterations") int hashIterations,
-              @JsonProperty("algorithm") String algorithm, @JsonProperty("remaining") int remainingCodes) {
+    public RecoveryAuthnCodesCredentialData(@JsonProperty("hashIterations") int hashIterations,
+                                            @JsonProperty("algorithm") String algorithm, @JsonProperty("remaining") int remainingCodes) {
         this.hashIterations = hashIterations;
         this.algorithm = algorithm;
         this.remainingCodes = remainingCodes;

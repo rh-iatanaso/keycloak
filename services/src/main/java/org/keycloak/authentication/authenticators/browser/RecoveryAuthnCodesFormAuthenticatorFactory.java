@@ -7,14 +7,14 @@ import org.keycloak.authentication.ConfigurableAuthenticatorFactory;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.credential.BackupAuthnCodesCredentialModel;
+import org.keycloak.models.credential.RecoveryAuthnCodesCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
 
 import java.util.List;
 
-public class BackupAuthnCodesFormAuthenticatorFactory implements AuthenticatorFactory {
+public class RecoveryAuthnCodesFormAuthenticatorFactory implements AuthenticatorFactory {
 
-    public static final String PROVIDER_ID = "auth-backup-authn-code-form";
+    public static final String PROVIDER_ID = "auth-recovery-authn-code-form";
 
     @Override
     public String getId() {
@@ -23,12 +23,12 @@ public class BackupAuthnCodesFormAuthenticatorFactory implements AuthenticatorFa
 
     @Override
     public String getDisplayType() {
-        return "Backup Authentication Code Form";
+        return "Recovery Authentication Code Form";
     }
 
     @Override
     public String getReferenceCategory() {
-        return BackupAuthnCodesCredentialModel.TYPE;
+        return RecoveryAuthnCodesCredentialModel.TYPE;
     }
 
     @Override
@@ -48,7 +48,7 @@ public class BackupAuthnCodesFormAuthenticatorFactory implements AuthenticatorFa
 
     @Override
     public String getHelpText() {
-        return "Validates a Backup Authentication Code";
+        return "Validates a Recovery Authentication Code";
     }
 
     @Override
@@ -58,7 +58,7 @@ public class BackupAuthnCodesFormAuthenticatorFactory implements AuthenticatorFa
 
     @Override
     public Authenticator create(KeycloakSession keycloakSession) {
-        return new BackupAuthnCodesFormAuthenticator(keycloakSession);
+        return new RecoveryAuthnCodesFormAuthenticator(keycloakSession);
     }
 
     @Override

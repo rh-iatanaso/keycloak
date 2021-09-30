@@ -1,9 +1,5 @@
 package org.keycloak.testsuite.pages;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.keycloak.testsuite.util.DroneUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
@@ -14,24 +10,24 @@ import org.openqa.selenium.support.FindBy;
  *
  * @author <a href="mailto:vnukala@redhat.com">Venkata Nukala</a>
  */
-public class EnterBackupCodePage extends LanguageComboboxAwarePage {
+public class EnterRecoveryAuthnCodePage extends LanguageComboboxAwarePage {
 
-    @FindBy(xpath = "//label[@for='backupCode']")
-    private WebElement backupCodeLabel;
+    @FindBy(xpath = "//label[@for='recoveryCodeInput']")
+    private WebElement recoveryAuthnCodeLabel;
 
-    @FindBy(id = "backupCode")
-    private WebElement backupCodeTextField;
+    @FindBy(id = "recoveryCodeInput")
+    private WebElement recoveryAuthnCodeTextField;
 
     @FindBy(id = "kc-login")
     private WebElement signInButton;
 
-    public int getBackupCodeToEnterNumber() {
-        String [] backupCodeLabelParts = backupCodeLabel.getText().split("#");
-        return Integer.valueOf(backupCodeLabelParts[1]) - 1; // Backup code 1 is at element 0 in the list
+    public int getRecoveryAuthnCodeToEnterNumber() {
+        String [] recoveryAuthnCodeLabelParts = recoveryAuthnCodeLabel.getText().split("#");
+        return Integer.valueOf(recoveryAuthnCodeLabelParts[1]) - 1; // Recovery Authn Code 1 is at element 0 in the list
     }
 
-    public void enterBackupCode(String backupCode) {
-        backupCodeTextField.sendKeys(backupCode);
+    public void enterRecoveryAuthnCode(String backupCode) {
+        recoveryAuthnCodeTextField.sendKeys(backupCode);
     }
 
     public void clickSignInButton() {
@@ -43,8 +39,8 @@ public class EnterBackupCodePage extends LanguageComboboxAwarePage {
 
         // Check the backup code text box and label available
         try {
-            driver.findElement(By.id("backupCode"));
-            driver.findElement(By.xpath("//label[@for='backupCode']"));
+            driver.findElement(By.id("recoveryCodeInput"));
+            driver.findElement(By.xpath("//label[@for='recoveryCodeInput']"));
         } catch (NoSuchElementException nfe) {
             return false;
         }

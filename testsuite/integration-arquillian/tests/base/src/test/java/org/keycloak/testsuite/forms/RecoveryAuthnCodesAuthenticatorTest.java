@@ -4,15 +4,15 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.page.Page;
 import org.junit.Test;
 import org.keycloak.authentication.AuthenticationFlow;
-import org.keycloak.authentication.authenticators.browser.BackupAuthnCodesFormAuthenticatorFactory;
+import org.keycloak.authentication.authenticators.browser.RecoveryAuthnCodesFormAuthenticatorFactory;
 import org.keycloak.authentication.authenticators.browser.PasswordFormFactory;
 import org.keycloak.authentication.authenticators.browser.UsernameFormFactory;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import org.keycloak.models.credential.BackupAuthnCodesCredentialModel;
-import org.keycloak.models.utils.BackupAuthnCodesUtils;
+import org.keycloak.models.credential.RecoveryAuthnCodesCredentialModel;
+import org.keycloak.models.utils.RecoveryAuthnCodesUtils;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.RequiredActionProviderSimpleRepresentation;
 import org.keycloak.testsuite.AbstractTestRealmKeycloakTest;
@@ -31,9 +31,9 @@ import java.util.List;
  *
  * @author <a href="mailto:vnukala@redhat.com">Venkata Nukala</a>
  */
-public class BackupCodesAuthenticationTest extends AbstractTestRealmKeycloakTest {
+public class RecoveryAuthnCodesAuthenticatorTest extends AbstractTestRealmKeycloakTest {
 
-    private static final String BROWSER_FLOW_WITH_BACKUP_CODES = "Browser with Backup Codes";
+    private static final String BROWSER_FLOW_WITH_RECOVERY_AUTHN_CODES = "Browser with Recovery Authentication Codes";
 
     @Drone
     protected WebDriver driver;
@@ -45,10 +45,10 @@ public class BackupCodesAuthenticationTest extends AbstractTestRealmKeycloakTest
     protected LoginUsernameOnlyPage loginUsernameOnlyPage;
 
     @Page
-    protected EnterBackupCodePage enterBackupCodePage;
+    protected EnterRecoveryAuthnCodePage enterRecoveryAuthnCodePage;
 
     @Page
-    protected SetupBackupCodesPage setupBackupCodesPage;
+    protected SetupRecoveryAuthnCodesPage setupRecoveryAuthnCodesPage;
 
     @Page
     protected SelectAuthenticatorPage selectAuthenticatorPage;
@@ -67,8 +67,8 @@ public class BackupCodesAuthenticationTest extends AbstractTestRealmKeycloakTest
 
     }
 
-    void configureBrowserFlowWithBackupCodes(KeycloakTestingClient testingClient) {
-        final String newFlowAlias = BROWSER_FLOW_WITH_BACKUP_CODES;
+    void configureBrowserFlowWithRecoveryAuthnCodes(KeycloakTestingClient testingClient) {
+        final String newFlowAlias = BROWSER_FLOW_WITH_RECOVERY_AUTHN_CODES;
         testingClient.server("test").run(session -> FlowUtil.inCurrentRealm(session).copyBrowserFlow(newFlowAlias));
         testingClient.server("test").run(session -> FlowUtil.inCurrentRealm(session)
                 .selectFlow(newFlowAlias)
@@ -78,8 +78,8 @@ public class BackupCodesAuthenticationTest extends AbstractTestRealmKeycloakTest
                         .addSubFlowExecution(AuthenticationExecutionModel.Requirement.REQUIRED, reqSubFlow -> reqSubFlow
                                 // Add authenticators to this flow: 1 PASSWORD, 2 Another subflow with having only OTP as child
                                 .addAuthenticatorExecution(AuthenticationExecutionModel.Requirement.ALTERNATIVE, PasswordFormFactory.PROVIDER_ID)
-                                .addSubFlowExecution("backup subflow", AuthenticationFlow.BASIC_FLOW, AuthenticationExecutionModel.Requirement.ALTERNATIVE, altSubFlow -> altSubFlow
-                                        .addAuthenticatorExecution(AuthenticationExecutionModel.Requirement.REQUIRED, BackupAuthnCodesFormAuthenticatorFactory.PROVIDER_ID)
+                                .addSubFlowExecution("Recovery-Authn-Codes subflow", AuthenticationFlow.BASIC_FLOW, AuthenticationExecutionModel.Requirement.ALTERNATIVE, altSubFlow -> altSubFlow
+                                        .addAuthenticatorExecution(AuthenticationExecutionModel.Requirement.REQUIRED, RecoveryAuthnCodesFormAuthenticatorFactory.PROVIDER_ID)
                                 )
                         )
                 )
@@ -87,14 +87,14 @@ public class BackupCodesAuthenticationTest extends AbstractTestRealmKeycloakTest
         );
 
         ApiUtil.removeUserByUsername(testRealm(), "test-user@localhost");
-        String userId = createUser("test", "test-user@localhost", "password", UserModel.RequiredAction.CONFIGURE_BACKUP_CODES.name());
+        String userId = createUser("test", "test-user@localhost", "password", UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES.name());
     }
 
-    // In a sub-flow with alternative credential executors, test whether backup codes authentication is working
+    // In a sub-flow with alternative credential executors, test whether Recovery Authentication Codes are working
     @Test
-    public void testAuthenticateBackupCodes() {
+    public void testAuthenticateRecoveryAuthnCodes() {
         try {
-            configureBrowserFlowWithBackupCodes(testingClient);
+            configureBrowserFlowWithRecoveryAuthnCodes(testingClient);
             loginUsernameOnlyPage.open();
             loginUsernameOnlyPage.assertAttemptedUsernameAvailability(false);
             loginUsernameOnlyPage.login("test-user@localhost");
@@ -103,28 +103,28 @@ public class BackupCodesAuthenticationTest extends AbstractTestRealmKeycloakTest
             passwordPage.assertAttemptedUsernameAvailability(true);
             Assert.assertEquals("test-user@localhost", passwordPage.getAttemptedUsername());
             passwordPage.assertTryAnotherWayLinkAvailability(true);
-            List<String> backupCodes = BackupAuthnCodesUtils.generateRawCodes();
+            List<String> generatedRecoveryAuthnCodes = RecoveryAuthnCodesUtils.generateRawCodes();
             testingClient.server().run(session -> {
                 RealmModel realm = session.realms().getRealmByName("test");
                 UserModel user = session.users().getUserByUsername(realm, "test-user@localhost");
-                CredentialModel backupCred = BackupAuthnCodesCredentialModel.createFromValues(
-                        backupCodes.stream().toArray(String[]::new),
+                CredentialModel recoveryAuthnCodesCred = RecoveryAuthnCodesCredentialModel.createFromValues(
+                        generatedRecoveryAuthnCodes.stream().toArray(String[]::new),
                         System.currentTimeMillis(),
                         null);
-                session.userCredentialManager().createCredential(realm, user, backupCred);
+                session.userCredentialManager().createCredential(realm, user, recoveryAuthnCodesCred);
             });
             passwordPage.clickTryAnotherWayLink();
             selectAuthenticatorPage.assertCurrent();
-            Assert.assertEquals(Arrays.asList(SelectAuthenticatorPage.PASSWORD, SelectAuthenticatorPage.BACKUP_CODES), selectAuthenticatorPage.getAvailableLoginMethods());
-            selectAuthenticatorPage.selectLoginMethod(SelectAuthenticatorPage.BACKUP_CODES);
-            enterBackupCodePage.assertCurrent();
-            enterBackupCodePage.enterBackupCode(backupCodes.get(enterBackupCodePage.getBackupCodeToEnterNumber()));
-            enterBackupCodePage.clickSignInButton();
-            enterBackupCodePage.assertAccountLinkAvailability(true);
+            Assert.assertEquals(Arrays.asList(SelectAuthenticatorPage.PASSWORD, SelectAuthenticatorPage.RECOVERY_AUTHN_CODES), selectAuthenticatorPage.getAvailableLoginMethods());
+            selectAuthenticatorPage.selectLoginMethod(SelectAuthenticatorPage.RECOVERY_AUTHN_CODES);
+            enterRecoveryAuthnCodePage.assertCurrent();
+            enterRecoveryAuthnCodePage.enterRecoveryAuthnCode(generatedRecoveryAuthnCodes.get(enterRecoveryAuthnCodePage.getRecoveryAuthnCodeToEnterNumber()));
+            enterRecoveryAuthnCodePage.clickSignInButton();
+            enterRecoveryAuthnCodePage.assertAccountLinkAvailability(true);
         } finally {
-            // Remove saved backup codes to keep a clean slate after this test
-            enterBackupCodePage.assertAccountLinkAvailability(true);
-            enterBackupCodePage.clickAccountLink();
+            // Remove saved Recovery Authentication Codes to keep a clean slate after this test
+            enterRecoveryAuthnCodePage.assertAccountLinkAvailability(true);
+            enterRecoveryAuthnCodePage.clickAccountLink();
             landingPage.assertCurrent();
             landingPage.clickSigningInLink();
             authenticationMethodSetupPage.assertCurrent();
@@ -132,18 +132,18 @@ public class BackupCodesAuthenticationTest extends AbstractTestRealmKeycloakTest
             authenticationMethodSetupPage.clickConfirmButton();
             authenticationMethodSetupPage.assertCurrent();
             // Revert copy of browser flow to original to keep clean slate after this test
-            BrowserFlowTest.revertFlows(testRealm(), BROWSER_FLOW_WITH_BACKUP_CODES);
+            BrowserFlowTest.revertFlows(testRealm(), BROWSER_FLOW_WITH_RECOVERY_AUTHN_CODES);
         }
     }
 
-    //// In a sub-flow with alternative credential executors, test whether setup backup codes flow is working
+    //// In a sub-flow with alternative credential executors, test whether setup Recovery Authentication Codes flow is working
     @Test
-    public void testSetupBackupCodes() {
+    public void testSetupRecoveryAuthnCodes() {
         try {
-            configureBrowserFlowWithBackupCodes(testingClient);
+            configureBrowserFlowWithRecoveryAuthnCodes(testingClient);
             RequiredActionProviderSimpleRepresentation simpleRepresentation = new RequiredActionProviderSimpleRepresentation();
-            simpleRepresentation.setProviderId(UserModel.RequiredAction.CONFIGURE_BACKUP_CODES.name());
-            simpleRepresentation.setName(UserModel.RequiredAction.CONFIGURE_BACKUP_CODES.name());
+            simpleRepresentation.setProviderId(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES.name());
+            simpleRepresentation.setName(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES.name());
             testRealm().flows().registerRequiredAction(simpleRepresentation);
             loginUsernameOnlyPage.open();
             loginUsernameOnlyPage.assertAttemptedUsernameAvailability(false);
@@ -153,22 +153,22 @@ public class BackupCodesAuthenticationTest extends AbstractTestRealmKeycloakTest
             //passwordPage.assertAttemptedUsernameAvailability(true);
             Assert.assertEquals("test-user@localhost", passwordPage.getAttemptedUsername());
             passwordPage.login("password");
-            setupBackupCodesPage.assertCurrent();
-            setupBackupCodesPage.getBackupCodes().forEach( backupCode -> System.out.println(backupCode) );
-            setupBackupCodesPage.clickSaveBackupCodesButton();
+            setupRecoveryAuthnCodesPage.assertCurrent();
+            setupRecoveryAuthnCodesPage.getRecoveryAuthnCodes().forEach(oneRecoveryAuthnCode -> System.out.println(oneRecoveryAuthnCode) );
+            setupRecoveryAuthnCodesPage.clickSaveRecoveryAuthnCodesButton();
         } finally {
             // Remove saved backup codes to keep a clean slate after this test
-            setupBackupCodesPage.assertAccountLinkAvailability(true);
-            setupBackupCodesPage.clickAccountLink();
+            setupRecoveryAuthnCodesPage.assertAccountLinkAvailability(true);
+            setupRecoveryAuthnCodesPage.clickAccountLink();
             landingPage.assertCurrent();
             landingPage.clickSigningInLink();
             authenticationMethodSetupPage.assertCurrent();
             authenticationMethodSetupPage.clickRemoveBackupCodesLink();
             authenticationMethodSetupPage.clickConfirmButton();
             authenticationMethodSetupPage.assertCurrent();
-            testRealm().flows().removeRequiredAction(UserModel.RequiredAction.CONFIGURE_BACKUP_CODES.name());
+            testRealm().flows().removeRequiredAction(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES.name());
             // Revert copy of browser flow to original to keep clean slate after this test
-            BrowserFlowTest.revertFlows(testRealm(), BROWSER_FLOW_WITH_BACKUP_CODES);
+            BrowserFlowTest.revertFlows(testRealm(), BROWSER_FLOW_WITH_RECOVERY_AUTHN_CODES);
         }
     }
 

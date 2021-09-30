@@ -4,22 +4,22 @@ import org.keycloak.credential.CredentialModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import org.keycloak.models.credential.BackupAuthnCodesCredentialModel;
+import org.keycloak.models.credential.RecoveryAuthnCodesCredentialModel;
 
-public class BackupAuthnCodeInputLoginBean {
+public class RecoveryAuthnCodeInputLoginBean {
 
     private final int codeNumber;
 
-    public BackupAuthnCodeInputLoginBean(KeycloakSession session, RealmModel realm, UserModel user) {
+    public RecoveryAuthnCodeInputLoginBean(KeycloakSession session, RealmModel realm, UserModel user) {
         CredentialModel credentialModel = session.userCredentialManager()
                                                  .getStoredCredentialsByTypeStream(realm,
                                                                                    user,
-                                                                                   BackupAuthnCodesCredentialModel.TYPE)
+                                                                                   RecoveryAuthnCodesCredentialModel.TYPE)
                                                  .findFirst().get();
 
-        BackupAuthnCodesCredentialModel backupCodeCredentialModel = BackupAuthnCodesCredentialModel.createFromCredentialModel(credentialModel);
+        RecoveryAuthnCodesCredentialModel recoveryCodeCredentialModel = RecoveryAuthnCodesCredentialModel.createFromCredentialModel(credentialModel);
 
-        this.codeNumber = backupCodeCredentialModel.getNextBackupCode().getNumber();
+        this.codeNumber = recoveryCodeCredentialModel.getNextBackupCode().getNumber();
     }
 
     public int getCodeNumber() {
