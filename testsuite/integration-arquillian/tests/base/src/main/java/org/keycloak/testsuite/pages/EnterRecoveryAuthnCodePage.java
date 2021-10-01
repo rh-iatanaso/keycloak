@@ -26,8 +26,8 @@ public class EnterRecoveryAuthnCodePage extends LanguageComboboxAwarePage {
         return Integer.valueOf(recoveryAuthnCodeLabelParts[1]) - 1; // Recovery Authn Code 1 is at element 0 in the list
     }
 
-    public void enterRecoveryAuthnCode(String backupCode) {
-        recoveryAuthnCodeTextField.sendKeys(backupCode);
+    public void enterRecoveryAuthnCode(String recoveryCode) {
+        recoveryAuthnCodeTextField.sendKeys(recoveryCode);
     }
 
     public void clickSignInButton() {
@@ -44,7 +44,6 @@ public class EnterRecoveryAuthnCodePage extends LanguageComboboxAwarePage {
         } catch (NoSuchElementException nfe) {
             return false;
         }
-
         return true;
     }
 

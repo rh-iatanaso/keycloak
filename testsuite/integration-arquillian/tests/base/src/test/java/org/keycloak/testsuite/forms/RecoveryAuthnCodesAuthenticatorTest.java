@@ -128,7 +128,7 @@ public class RecoveryAuthnCodesAuthenticatorTest extends AbstractTestRealmKeyclo
             landingPage.assertCurrent();
             landingPage.clickSigningInLink();
             authenticationMethodSetupPage.assertCurrent();
-            authenticationMethodSetupPage.clickRemoveBackupCodesLink();
+            authenticationMethodSetupPage.clickRemoveRecoveryCodesLink();
             authenticationMethodSetupPage.clickConfirmButton();
             authenticationMethodSetupPage.assertCurrent();
             // Revert copy of browser flow to original to keep clean slate after this test
@@ -154,7 +154,6 @@ public class RecoveryAuthnCodesAuthenticatorTest extends AbstractTestRealmKeyclo
             Assert.assertEquals("test-user@localhost", passwordPage.getAttemptedUsername());
             passwordPage.login("password");
             setupRecoveryAuthnCodesPage.assertCurrent();
-            setupRecoveryAuthnCodesPage.getRecoveryAuthnCodes().forEach(oneRecoveryAuthnCode -> System.out.println(oneRecoveryAuthnCode) );
             setupRecoveryAuthnCodesPage.clickSaveRecoveryAuthnCodesButton();
         } finally {
             // Remove saved backup codes to keep a clean slate after this test
@@ -163,7 +162,7 @@ public class RecoveryAuthnCodesAuthenticatorTest extends AbstractTestRealmKeyclo
             landingPage.assertCurrent();
             landingPage.clickSigningInLink();
             authenticationMethodSetupPage.assertCurrent();
-            authenticationMethodSetupPage.clickRemoveBackupCodesLink();
+            authenticationMethodSetupPage.clickRemoveRecoveryCodesLink();
             authenticationMethodSetupPage.clickConfirmButton();
             authenticationMethodSetupPage.assertCurrent();
             testRealm().flows().removeRequiredAction(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES.name());
