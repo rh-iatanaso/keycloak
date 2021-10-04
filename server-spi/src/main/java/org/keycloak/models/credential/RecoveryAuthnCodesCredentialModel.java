@@ -52,7 +52,8 @@ public class RecoveryAuthnCodesCredentialModel extends CredentialModel {
 
         try {
             List<RecoveryAuthnCodeRepresentation> recoveryCodes = IntStream.range(0, originalGeneratedCodes.size())
-                    .mapToObj(i -> new RecoveryAuthnCodeRepresentation(i + 1, originalGeneratedCodes.get(i)))
+                    .mapToObj(i -> new RecoveryAuthnCodeRepresentation(i + 1,
+                            RecoveryAuthnCodesUtils.hashRawCode(originalGeneratedCodes.get(i))))
                     .collect(Collectors.toList());
             secretData = new RecoveryAuthnCodesSecretData(recoveryCodes);
             credentialData = new RecoveryAuthnCodesCredentialData(RecoveryAuthnCodesUtils.NUM_HASH_ITERATIONS,

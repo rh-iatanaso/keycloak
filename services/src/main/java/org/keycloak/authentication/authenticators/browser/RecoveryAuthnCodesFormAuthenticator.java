@@ -65,7 +65,7 @@ public class RecoveryAuthnCodesFormAuthenticator implements Authenticator {
             authenticatedUser = authnFlowContext.getUser();
             if (!isDisabledByBruteForce(authnFlowContext, authenticatedUser)) {
                 isValid = this.userCredentialManager.isValid(targetRealm, authenticatedUser,
-                        UserCredentialModel.buildFromBackupAuthnCode(recoveryAuthnCodeUserInput));
+                        UserCredentialModel.buildFromBackupAuthnCode(recoveryAuthnCodeUserInput.replace("-", "")));
                 if (!isValid) {
                     responseChallenge = createLoginForm(authnFlowContext, true,
                             RecoveryAuthnCodesUtils.RECOVERY_AUTHN_CODES_INPUT_DEFAULT_ERROR_MESSAGE,
