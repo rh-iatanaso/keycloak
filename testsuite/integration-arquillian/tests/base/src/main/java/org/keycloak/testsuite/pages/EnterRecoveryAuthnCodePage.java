@@ -21,6 +21,9 @@ public class EnterRecoveryAuthnCodePage extends LanguageComboboxAwarePage {
     @FindBy(id = "kc-login")
     private WebElement signInButton;
 
+    @FindBy(className = "kc-feedback-text")
+    private WebElement feedbackText;
+
     public int getRecoveryAuthnCodeToEnterNumber() {
         String [] recoveryAuthnCodeLabelParts = recoveryAuthnCodeLabel.getText().split("#");
         return Integer.valueOf(recoveryAuthnCodeLabelParts[1]) - 1; // Recovery Authn Code 1 is at element 0 in the list
@@ -50,5 +53,9 @@ public class EnterRecoveryAuthnCodePage extends LanguageComboboxAwarePage {
     @Override
     public void open() throws Exception {
         throw new UnsupportedOperationException();
+    }
+
+    public String getFeedbackText() {
+        return feedbackText.getText().trim();
     }
 }

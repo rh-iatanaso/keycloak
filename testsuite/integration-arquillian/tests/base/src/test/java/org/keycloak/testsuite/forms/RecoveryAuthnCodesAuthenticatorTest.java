@@ -22,6 +22,7 @@ import org.keycloak.testsuite.pages.*;
 import org.keycloak.testsuite.util.FlowUtil;
 import org.openqa.selenium.WebDriver;
 import org.junit.Assert;
+import  org.keycloak.testsuite.util.WaitUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +35,8 @@ import java.util.List;
 public class RecoveryAuthnCodesAuthenticatorTest extends AbstractTestRealmKeycloakTest {
 
     private static final String BROWSER_FLOW_WITH_RECOVERY_AUTHN_CODES = "Browser with Recovery Authentication Codes";
+
+    private static final int BRUTE_FORCE_FAIL_ATTEMPTS = 3;
 
     @Drone
     protected WebDriver driver;
@@ -166,6 +169,62 @@ public class RecoveryAuthnCodesAuthenticatorTest extends AbstractTestRealmKeyclo
             authenticationMethodSetupPage.clickConfirmButton();
             authenticationMethodSetupPage.assertCurrent();
             testRealm().flows().removeRequiredAction(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES.name());
+            // Revert copy of browser flow to original to keep clean slate after this test
+            BrowserFlowTest.revertFlows(testRealm(), BROWSER_FLOW_WITH_RECOVERY_AUTHN_CODES);
+        }
+    }
+
+
+    @Test
+    public void testBruteforceProtectionRecoveryAuthnCodes() {
+        try {
+            configureBrowserFlowWithRecoveryAuthnCodes(testingClient);
+            RealmRepresentation rep = testRealm().toRepresentation();
+            rep.setBruteForceProtected(true);
+            testRealm().update(rep);
+            loginUsernameOnlyPage.open();
+            loginUsernameOnlyPage.assertAttemptedUsernameAvailability(false);
+            loginUsernameOnlyPage.login("test-user@localhost");
+            // On the password page, username should be shown as we know the user
+            passwordPage.assertCurrent();
+            passwordPage.assertAttemptedUsernameAvailability(true);
+            Assert.assertEquals("test-user@localhost", passwordPage.getAttemptedUsername());
+            passwordPage.assertTryAnotherWayLinkAvailability(true);
+            List<String> generatedRecoveryAuthnCodes = RecoveryAuthnCodesUtils.generateRawCodes();
+            testingClient.server().run(session -> {
+                RealmModel realm = session.realms().getRealmByName("test");
+                UserModel user = session.users().getUserByUsername(realm, "test-user@localhost");
+                CredentialModel recoveryAuthnCodesCred = RecoveryAuthnCodesCredentialModel.createFromValues(
+                        generatedRecoveryAuthnCodes,
+                        System.currentTimeMillis(),
+                        null);
+                session.userCredentialManager().createCredential(realm, user, recoveryAuthnCodesCred);
+            });
+            passwordPage.clickTryAnotherWayLink();
+            selectAuthenticatorPage.assertCurrent();
+            Assert.assertEquals(Arrays.asList(SelectAuthenticatorPage.PASSWORD, SelectAuthenticatorPage.RECOVERY_AUTHN_CODES), selectAuthenticatorPage.getAvailableLoginMethods());
+            selectAuthenticatorPage.selectLoginMethod(SelectAuthenticatorPage.RECOVERY_AUTHN_CODES);
+            enterRecoveryAuthnCodePage.assertCurrent();
+            generatedRecoveryAuthnCodes.forEach(code -> System.out.println(code));
+            for(int i=0; i < (BRUTE_FORCE_FAIL_ATTEMPTS - 1); i++) {
+                long randomNumber = (long)Math.random()*1000000000000L;
+                enterRecoveryAuthnCodePage.enterRecoveryAuthnCode(String.valueOf(randomNumber));
+                enterRecoveryAuthnCodePage.clickSignInButton();
+                WaitUtils.waitForPageToLoad();
+                enterRecoveryAuthnCodePage.assertCurrent();
+                String feedbackText = enterRecoveryAuthnCodePage.getFeedbackText();
+                Assert.assertEquals(feedbackText, "Invalid Recovery Authentication Code");
+            }
+            // Now enter the right code which should not work
+            enterRecoveryAuthnCodePage.enterRecoveryAuthnCode(generatedRecoveryAuthnCodes.get(enterRecoveryAuthnCodePage.getRecoveryAuthnCodeToEnterNumber()));
+            enterRecoveryAuthnCodePage.clickSignInButton();
+            // Message changes after exhausting number of brute force attempts
+            Assert.assertEquals(enterRecoveryAuthnCodePage.getFeedbackText(), "Invalid username or password.");
+            enterRecoveryAuthnCodePage.assertAccountLinkAvailability(false);
+        } finally {
+            RealmRepresentation rep = testRealm().toRepresentation();
+            rep.setBruteForceProtected(false);
+            testRealm().update(rep);
             // Revert copy of browser flow to original to keep clean slate after this test
             BrowserFlowTest.revertFlows(testRealm(), BROWSER_FLOW_WITH_RECOVERY_AUTHN_CODES);
         }
