@@ -20,12 +20,16 @@ import org.keycloak.testsuite.admin.ApiUtil;
 import org.keycloak.testsuite.client.KeycloakTestingClient;
 import org.keycloak.testsuite.pages.*;
 import org.keycloak.testsuite.util.FlowUtil;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.junit.Assert;
 import  org.keycloak.testsuite.util.WaitUtils;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 
 /**
  * Backup Code Authentication test
@@ -128,12 +132,7 @@ public class RecoveryAuthnCodesAuthenticatorTest extends AbstractTestRealmKeyclo
             // Remove saved Recovery Authentication Codes to keep a clean slate after this test
             enterRecoveryAuthnCodePage.assertAccountLinkAvailability(true);
             enterRecoveryAuthnCodePage.clickAccountLink();
-            landingPage.assertCurrent();
-            landingPage.clickSigningInLink();
-            authenticationMethodSetupPage.assertCurrent();
-            authenticationMethodSetupPage.clickRemoveRecoveryCodesLink();
-            authenticationMethodSetupPage.clickConfirmButton();
-            authenticationMethodSetupPage.assertCurrent();
+            assertThat(driver.getTitle(), containsString("Account Management"));
             // Revert copy of browser flow to original to keep clean slate after this test
             BrowserFlowTest.revertFlows(testRealm(), BROWSER_FLOW_WITH_RECOVERY_AUTHN_CODES);
         }
@@ -162,12 +161,7 @@ public class RecoveryAuthnCodesAuthenticatorTest extends AbstractTestRealmKeyclo
             // Remove saved backup codes to keep a clean slate after this test
             setupRecoveryAuthnCodesPage.assertAccountLinkAvailability(true);
             setupRecoveryAuthnCodesPage.clickAccountLink();
-            landingPage.assertCurrent();
-            landingPage.clickSigningInLink();
-            authenticationMethodSetupPage.assertCurrent();
-            authenticationMethodSetupPage.clickRemoveRecoveryCodesLink();
-            authenticationMethodSetupPage.clickConfirmButton();
-            authenticationMethodSetupPage.assertCurrent();
+            assertThat(driver.getTitle(), containsString("Account Management"));
             testRealm().flows().removeRequiredAction(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES.name());
             // Revert copy of browser flow to original to keep clean slate after this test
             BrowserFlowTest.revertFlows(testRealm(), BROWSER_FLOW_WITH_RECOVERY_AUTHN_CODES);
