@@ -10,6 +10,7 @@ import org.keycloak.utils.StringUtil;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,19 +26,12 @@ public class RecoveryAuthnCodesUtils {
     public static final String FIELD_RECOVERY_CODE_IN_DIRECT_GRANT_FLOW = "recovery_code";
 
     public static String hashRawCode(String rawGeneratedCode) {
-        String hashedCode = null;
+        Objects.requireNonNull(rawGeneratedCode, "rawGeneratedCode cannot be null");
 
-        if (StringUtil.isNotBlank(rawGeneratedCode)) {
+        byte[] rawCodeHashedAsBytes = HashUtils.hash(JavaAlgorithm.getJavaAlgorithmForHash(NOM_ALGORITHM_TO_HASH),
+                rawGeneratedCode.getBytes(StandardCharsets.UTF_8));
 
-            byte[] rawCodeHashedAsBytes = HashUtils.hash(JavaAlgorithm.getJavaAlgorithmForHash(NOM_ALGORITHM_TO_HASH),
-                    rawGeneratedCode.getBytes(StandardCharsets.UTF_8));
-
-            if (rawCodeHashedAsBytes != null && rawCodeHashedAsBytes.length > 0) {
-                hashedCode = Base64.encodeBytes(rawCodeHashedAsBytes);
-            }
-        }
-
-        return hashedCode;
+        return Base64.encodeBytes(rawCodeHashedAsBytes);
     }
 
     public static boolean verifyRecoveryCodeInput(String rawInputRecoveryCode, String hashedSavedRecoveryCode) {
