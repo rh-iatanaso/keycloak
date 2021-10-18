@@ -84,12 +84,12 @@
         }
 
         var copyButton = document.getElementById("copyRecoveryCodes");
-        copyButton && copyButton.addEventListener('click', function () {
+        copyButton && copyButton.addEventListener("click", function () {
             copyRecoveryCodes();
             setTimeout(function() {
                 console.log("copied");
             }, 1500);
-        }
+        });
 
         /* download recovery codes  */
         function parseRecoveryCodeList() {
