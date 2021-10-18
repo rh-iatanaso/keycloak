@@ -94,6 +94,58 @@
 
         var copyButton = document.getElementById("copyRecoveryCodes");
         copyButton && copyButton.addEventListener("click", copyRecoveryCodes, null);
+
+        /* download recovery codes  */
+        function parseRecoveryCodeList() {
+            var recoveryCodes = document.querySelectorAll(".kc-recovery-codes-list li");
+            var recoveryCodeList = "";
+
+            for (var i = 0; i < recoveryCodes.length; i++) {
+                var recoveryCodeLiElement = recoveryCodes[i].innerText;
+                recoveryCodeList += recoveryCodeLiElement + "\r\n";
+            }
+
+            return recoveryCodeList;
+        }
+
+        function buildFileContent() {
+            var recoveryCodeList = parseRecoveryCodeList();
+            var dt = new Date();
+            var options = {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                timeZoneName: 'short'
+            };
+
+            return fileBodyContent =
+                "Keep these recovery codes somewhere safe.\n\n" +
+                recoveryCodeList + "\n" +
+                "Recovery codes are single-use passcodes that allow you to log in to your account if you do not have access to your authenticator.\n\n" +
+                "These codes were generated on " + dt.toLocaleString('en-US', options);
+        }
+
+        function setUpDownloadLinkAndDownload(filename, text) {
+            var el = document.createElement('a');
+
+            el.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            el.setAttribute('download', filename);
+            el.style.display = 'none';
+            document.body.appendChild(el);
+
+            el.click();
+
+            document.body.removeChild(el);
+        }
+
+        function downloadRecoveryCodes() {
+            setUpDownloadLinkAndDownload('red-hat-recovery-codes.txt', buildFileContent());
+        }
+
+        var downloadButton = document.getElementById("downloadRecoveryCodes");
+        downloadButton && downloadButton.addEventListener("click", downloadRecoveryCodes);
     </script>
 </#if>
 </@layout.registrationLayout>
