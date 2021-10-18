@@ -114,15 +114,20 @@ public final class ShowConfigCommand {
                     @Override
                     public boolean test(String s) {
                         ConfigValue configValue = getConfigValue(s);
-                        return configValue.getConfigSourceName().equals(PersistedConfigSource.NAME);
+
+                        if (configValue == null) {
+                            return false;
+                        }
+
+                        return PersistedConfigSource.NAME.equals(configValue.getConfigSourceName());
                     }
                 })
-                .filter(property -> filterByGroup(property))
+                .filter(ShowConfigCommand::filterByGroup)
                 .collect(Collectors.groupingBy(ShowConfigCommand::groupProperties, Collectors.toSet()))
                 .forEach(new BiConsumer<String, Set<String>>() {
                     @Override
                     public void accept(String group, Set<String> propertyNames) {
-                        properties.computeIfAbsent(group, (name) -> new HashSet<>()).addAll(propertyNames);
+                        properties.computeIfAbsent(group, name -> new HashSet<>()).addAll(propertyNames);
                     }
                 });
 

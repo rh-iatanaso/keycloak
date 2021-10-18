@@ -48,7 +48,6 @@ import org.keycloak.testsuite.AbstractTestRealmKeycloakTest;
 import org.keycloak.testsuite.AssertEvents;
 import org.keycloak.testsuite.arquillian.annotation.AuthServerContainerExclude;
 import org.keycloak.testsuite.arquillian.annotation.EnableFeature;
-import org.keycloak.testsuite.arquillian.annotation.SetDefaultProvider;
 import org.keycloak.testsuite.pages.AppPage;
 import org.keycloak.testsuite.pages.AppPage.RequestType;
 import org.keycloak.testsuite.pages.LoginPage;
@@ -58,7 +57,8 @@ import org.keycloak.testsuite.util.KeycloakModelUtils;
 import org.keycloak.testsuite.util.OAuthClient;
 import org.keycloak.testsuite.util.RealmBuilder;
 import org.keycloak.testsuite.util.UserBuilder;
-import org.keycloak.userprofile.UserProfileSpi;
+import org.keycloak.userprofile.UserProfileContext;
+import org.keycloak.userprofile.EventAuditingAttributeChangeListener;
 import org.openqa.selenium.By;
 
 /**
@@ -301,6 +301,25 @@ public class VerifyProfileTest extends AbstractTestRealmKeycloakTest {
     }
     
     @Test
+    public void testAttributeInputTypes() {
+
+        setUserProfileConfiguration(CONFIGURATION_FOR_USER_EDIT);
+        updateUser(user5Id, "ExistingFirst", "ExistingLast", null);
+
+        setUserProfileConfiguration("{\"attributes\": ["
+                + "{\"name\": \"department\", " + VerifyProfileTest.PERMISSIONS_ALL + ", \"required\":{}},"
+                + RegisterWithUserProfileTest.UP_CONFIG_PART_INPUT_TYPES
+                + "]}");
+
+        loginPage.open();
+        loginPage.login("login-test5", "password");
+
+        verifyProfilePage.assertCurrent();
+        
+        RegisterWithUserProfileTest.assertFieldTypes(driver);
+    }
+    
+    @Test
     public void testEvents() {
 
         setUserProfileConfiguration(CONFIGURATION_FOR_USER_EDIT);
@@ -321,9 +340,12 @@ public class VerifyProfileTest extends AbstractTestRealmKeycloakTest {
         
         verifyProfilePage.update("First", "Last", "Department");
         //event after profile is updated
+        // we also test additional attribute configured to be audited in the event
         events.expectRequiredAction(EventType.UPDATE_PROFILE).user(user5Id)
+        .detail(Details.CONTEXT, UserProfileContext.UPDATE_PROFILE.name())
         .detail(Details.PREVIOUS_FIRST_NAME, "ExistingFirst").detail(Details.UPDATED_FIRST_NAME, "First")
         .detail(Details.PREVIOUS_LAST_NAME, "ExistingLast").detail(Details.UPDATED_LAST_NAME, "Last")
+        .detail(Details.PREF_UPDATED+"department", "Department")
         .assertEvent();
     }
     
@@ -943,9 +965,10 @@ public class VerifyProfileTest extends AbstractTestRealmKeycloakTest {
 
 
     public static void setUserProfileConfiguration(RealmResource testRealm, String configuration) {
-        Response r = testRealm.users().userProfile().update(configuration);
-        if (r.getStatus() != 200) {
-            Assert.fail("UserProfile Configuration not set due to error: " + r.readEntity(String.class));
+        try (Response r = testRealm.users().userProfile().update(configuration)) {
+            if (r.getStatus() != 200) {
+                Assert.fail("UserProfile Configuration not set due to error: " + r.readEntity(String.class));
+            }
         }
     }
     

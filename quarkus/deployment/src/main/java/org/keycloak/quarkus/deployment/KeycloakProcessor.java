@@ -19,10 +19,14 @@ package org.keycloak.quarkus.deployment;
 
 import static java.util.Collections.emptyList;
 import static org.keycloak.configuration.Configuration.getPropertyNames;
-import static org.keycloak.configuration.Configuration.getRawValue;
+import static org.keycloak.connections.jpa.QuarkusJpaConnectionProviderFactory.QUERY_PROPERTY_PREFIX;
+import static org.keycloak.connections.jpa.util.JpaUtils.loadSpecificNamedQueries;
+import static org.keycloak.configuration.MicroProfileConfigProvider.NS_KEYCLOAK;
 import static org.keycloak.representations.provider.ScriptProviderDescriptor.AUTHENTICATORS;
 import static org.keycloak.representations.provider.ScriptProviderDescriptor.MAPPERS;
 import static org.keycloak.representations.provider.ScriptProviderDescriptor.POLICIES;
+import static org.keycloak.util.Environment.CLI_ARGS;
+import static org.keycloak.util.Environment.getProviderFiles;
 
 import javax.persistence.spi.PersistenceUnitTransactionType;
 import java.io.File;
@@ -38,20 +42,23 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import io.quarkus.agroal.spi.JdbcDataSourceBuildItem;
 import io.quarkus.deployment.IsDevelopment;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.LaunchModeBuildItem;
+import io.quarkus.deployment.builditem.StaticInitConfigSourceProviderBuildItem;
 import io.quarkus.hibernate.orm.deployment.HibernateOrmConfig;
 import io.quarkus.resteasy.server.common.deployment.ResteasyDeploymentCustomizerBuildItem;
+import io.quarkus.runtime.LaunchMode;
 import io.quarkus.smallrye.health.runtime.SmallRyeHealthHandler;
 import io.quarkus.vertx.http.deployment.RouteBuildItem;
 import io.vertx.core.Handler;
@@ -69,7 +76,6 @@ import org.keycloak.authorization.policy.provider.PolicySpi;
 import org.keycloak.authorization.policy.provider.js.DeployedScriptPolicyFactory;
 import org.keycloak.common.Profile;
 import org.keycloak.common.util.StreamUtil;
-import org.keycloak.config.ConfigProviderFactory;
 import org.keycloak.configuration.Configuration;
 import org.keycloak.configuration.KeycloakConfigSourceProvider;
 import org.keycloak.configuration.MicroProfileConfigProvider;
@@ -85,6 +91,7 @@ import org.keycloak.provider.ProviderFactory;
 import org.keycloak.provider.ProviderManager;
 import org.keycloak.provider.Spi;
 import org.keycloak.provider.quarkus.QuarkusRequestFilter;
+import org.keycloak.provider.quarkus.dev.QuarkusDevRequestFilter;
 import org.keycloak.quarkus.KeycloakRecorder;
 
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -99,7 +106,6 @@ import org.keycloak.representations.provider.ScriptProviderMetadata;
 import org.keycloak.services.NotFoundHandler;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.services.health.KeycloakMetricsHandler;
-import org.keycloak.services.resources.KeycloakApplication;
 import org.keycloak.transaction.JBossJtaTransactionManagerLookup;
 import org.keycloak.util.Environment;
 import org.keycloak.util.JsonSerialization;
@@ -151,12 +157,20 @@ class KeycloakProcessor {
      */
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep
-    void configureHibernate(KeycloakRecorder recorder, HibernateOrmConfig config, List<PersistenceUnitDescriptorBuildItem> descriptors) {
+    void configureHibernate(KeycloakRecorder recorder, HibernateOrmConfig config, List<PersistenceUnitDescriptorBuildItem> descriptors,
+            List<JdbcDataSourceBuildItem> jdbcDataSources) {
         PersistenceUnitDescriptor unit = descriptors.get(0).asOutputPersistenceUnitDefinition(emptyList()).getActualHibernateDescriptor();
+        Properties unitProperties = unit.getProperties();
 
-        unit.getProperties().setProperty(AvailableSettings.DIALECT, config.defaultPersistenceUnit.dialect.dialect.orElse(null));
-        unit.getProperties().setProperty(AvailableSettings.JPA_TRANSACTION_TYPE, PersistenceUnitTransactionType.JTA.name());
-        unit.getProperties().setProperty(AvailableSettings.QUERY_STARTUP_CHECKING, Boolean.FALSE.toString());
+        unitProperties.setProperty(AvailableSettings.DIALECT, config.defaultPersistenceUnit.dialect.dialect.orElse(null));
+        unitProperties.setProperty(AvailableSettings.JPA_TRANSACTION_TYPE, PersistenceUnitTransactionType.JTA.name());
+        unitProperties.setProperty(AvailableSettings.QUERY_STARTUP_CHECKING, Boolean.FALSE.toString());
+
+        String dbKind = jdbcDataSources.get(0).getDbKind();
+
+        for (Entry<Object, Object> query : loadSpecificNamedQueries(dbKind.toLowerCase()).entrySet()) {
+            unitProperties.setProperty(QUERY_PROPERTY_PREFIX + query.getKey(), query.getValue().toString());
+        }
     }
 
     /**
@@ -175,11 +189,11 @@ class KeycloakProcessor {
         Map<Class<? extends Provider>, String> defaultProviders = new HashMap<>();
         Map<String, ProviderFactory> preConfiguredProviders = new HashMap<>();
 
-        for (Map.Entry<Spi, Map<Class<? extends Provider>, Map<String, ProviderFactory>>> entry : loadFactories(preConfiguredProviders)
+        for (Entry<Spi, Map<Class<? extends Provider>, Map<String, ProviderFactory>>> entry : loadFactories(preConfiguredProviders)
                 .entrySet()) {
             checkProviders(entry.getKey(), entry.getValue(), defaultProviders);
 
-            for (Map.Entry<Class<? extends Provider>, Map<String, ProviderFactory>> value : entry.getValue().entrySet()) {
+            for (Entry<Class<? extends Provider>, Map<String, ProviderFactory>> value : entry.getValue().entrySet()) {
                 for (ProviderFactory factory : value.getValue().values()) {
                     factories.computeIfAbsent(entry.getKey(),
                             key -> new HashMap<>())
@@ -192,6 +206,16 @@ class KeycloakProcessor {
     }
 
     /**
+     * Register the custom {@link org.eclipse.microprofile.config.spi.ConfigSource} implementations.
+     *
+     * @param configSources
+     */
+    @BuildStep
+    void configureConfigSources(BuildProducer<StaticInitConfigSourceProviderBuildItem> configSources) {
+        configSources.produce(new StaticInitConfigSourceProviderBuildItem(KeycloakConfigSourceProvider.class.getName()));
+    }
+
+    /**
      * <p>Make the build time configuration available at runtime so that the server can run without having to specify some of
      * the properties again.
      *
@@ -201,7 +225,7 @@ class KeycloakProcessor {
      * @param recorder the recorder
      */
     @Record(ExecutionTime.STATIC_INIT)
-    @BuildStep
+    @BuildStep(onlyIf = isReAugmentation.class)
     void setBuildTimeProperties(KeycloakRecorder recorder) {
         Properties properties = new Properties();
 
@@ -217,6 +241,10 @@ class KeycloakProcessor {
             }
         }
 
+        for (File jar : getProviderFiles()) {
+            properties.put(String.format("kc.provider.file.%s.last-modified", jar.getName()), String.valueOf(jar.lastModified()));
+        }
+
         File file = KeycloakConfigSourceProvider.getPersistedConfigFile().toFile();
 
         if (file.exists()) {
@@ -228,15 +256,11 @@ class KeycloakProcessor {
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate persisted.properties file", e);
         }
-
-        recorder.validateAndSetBuildTimeProperties(Environment.isRebuild(), getRawValue("kc.config.args"));
-
-        recorder.showConfig();
     }
 
     private boolean isNotPersistentProperty(String name) {
         // these properties are ignored from the build time properties as they are runtime-specific
-        return !name.startsWith("kc") || "kc.home.dir".equals(name) || "kc.config.args".equals(name);
+        return !name.startsWith(NS_KEYCLOAK) || "kc.home.dir".equals(name) || CLI_ARGS.equals(name);
     }
 
     /**
@@ -253,8 +277,15 @@ class KeycloakProcessor {
     }
 
     @BuildStep
-    void initializeFilter(BuildProducer<FilterBuildItem> filters) {
-        filters.produce(new FilterBuildItem(new QuarkusRequestFilter(),FilterBuildItem.AUTHORIZATION - 10));
+    void initializeFilter(BuildProducer<FilterBuildItem> filters, LaunchModeBuildItem launchModeBuildItem) {
+        QuarkusRequestFilter filter = new QuarkusRequestFilter();
+        LaunchMode launchMode = launchModeBuildItem.getLaunchMode();
+
+        if (launchMode.isDevOrTest()) {
+            filter = new QuarkusDevRequestFilter();
+        }
+
+        filters.produce(new FilterBuildItem(filter,FilterBuildItem.AUTHORIZATION - 10));
     }
 
     /**
@@ -283,10 +314,10 @@ class KeycloakProcessor {
             metricsHandler = new NotFoundHandler();
         }
 
-        routes.produce(new RouteBuildItem(DEFAULT_HEALTH_ENDPOINT, healthHandler));
-        routes.produce(new RouteBuildItem(DEFAULT_HEALTH_ENDPOINT.concat("/live"), healthHandler));
-        routes.produce(new RouteBuildItem(DEFAULT_HEALTH_ENDPOINT.concat("/ready"), healthHandler));
-        routes.produce(new RouteBuildItem(KeycloakMetricsHandler.DEFAULT_METRICS_ENDPOINT, metricsHandler));
+        routes.produce(RouteBuildItem.builder().route(DEFAULT_HEALTH_ENDPOINT).handler(healthHandler).build());
+        routes.produce(RouteBuildItem.builder().route(DEFAULT_HEALTH_ENDPOINT.concat("/live")).handler(healthHandler).build());
+        routes.produce(RouteBuildItem.builder().route(DEFAULT_HEALTH_ENDPOINT.concat("/ready")).handler(healthHandler).build());
+        routes.produce(RouteBuildItem.builder().route(KeycloakMetricsHandler.DEFAULT_METRICS_ENDPOINT).handler(metricsHandler).build());
     }
 
     @BuildStep
@@ -310,15 +341,15 @@ class KeycloakProcessor {
 
     private Map<Spi, Map<Class<? extends Provider>, Map<String, ProviderFactory>>> loadFactories(
             Map<String, ProviderFactory> preConfiguredProviders) {
-        loadConfig();
-        BuildClassLoader providerClassLoader = new BuildClassLoader();
-        ProviderManager pm = new ProviderManager(KeycloakDeploymentInfo.create().services(), providerClassLoader);
+        Config.init(new MicroProfileConfigProvider());
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        ProviderManager pm = new ProviderManager(KeycloakDeploymentInfo.create().services(), classLoader);
         Map<Spi, Map<Class<? extends Provider>, Map<String, ProviderFactory>>> factories = new HashMap<>();
 
         for (Spi spi : pm.loadSpis()) {
             Map<Class<? extends Provider>, Map<String, ProviderFactory>> providers = new HashMap<>();
             List<ProviderFactory> loadedFactories = new ArrayList<>(pm.load(spi));
-            Map<String, ProviderFactory> deployedScriptProviders = loadDeployedScriptProviders(providerClassLoader, spi);
+            Map<String, ProviderFactory> deployedScriptProviders = loadDeployedScriptProviders(classLoader, spi);
 
             loadedFactories.addAll(deployedScriptProviders.values());
             preConfiguredProviders.putAll(deployedScriptProviders);
@@ -352,12 +383,12 @@ class KeycloakProcessor {
         return factories;
     }
 
-    private Map<String, ProviderFactory> loadDeployedScriptProviders(BuildClassLoader providerClassLoader, Spi spi) {
+    private Map<String, ProviderFactory> loadDeployedScriptProviders(ClassLoader classLoader, Spi spi) {
         Map<String, ProviderFactory> providers = new HashMap<>();
 
         if (supportsDeployeableScripts(spi)) {
             try {
-                Enumeration<URL> urls = providerClassLoader.getResources(KEYCLOAK_SCRIPTS_JSON_PATH);
+                Enumeration<URL> urls = classLoader.getResources(KEYCLOAK_SCRIPTS_JSON_PATH);
 
                 while (urls.hasMoreElements()) {
                     URL url = urls.nextElement();
@@ -372,7 +403,7 @@ class KeycloakProcessor {
                             descriptor = JsonSerialization.readValue(is, ScriptProviderDescriptor.class);
                         }
 
-                        for (Map.Entry<String, List<ScriptProviderMetadata>> entry : descriptor.getProviders().entrySet()) {
+                        for (Entry<String, List<ScriptProviderMetadata>> entry : descriptor.getProviders().entrySet()) {
                             if (isScriptForSpi(spi, entry.getKey())) {
                                 for (ScriptProviderMetadata metadata : entry.getValue()) {
                                     ProviderFactory provider = createDeployableScriptProvider(jarFile, entry, metadata);
@@ -390,7 +421,7 @@ class KeycloakProcessor {
         return providers;
     }
 
-    private ProviderFactory createDeployableScriptProvider(JarFile jarFile, Map.Entry<String, List<ScriptProviderMetadata>> entry,
+    private ProviderFactory createDeployableScriptProvider(JarFile jarFile, Entry<String, List<ScriptProviderMetadata>> entry,
             ScriptProviderMetadata metadata) throws IOException {
         String fileName = metadata.getFileName();
 
@@ -482,18 +513,6 @@ class KeycloakProcessor {
             defaultProviders.put(spi.getProviderClass(), defaultProvider);
         } else {
             logger.debugv("No default provider for {0}", spi.getName());
-        }
-    }
-
-    protected void loadConfig() {
-        ServiceLoader<ConfigProviderFactory> loader = ServiceLoader.load(ConfigProviderFactory.class, KeycloakApplication.class.getClassLoader());
-
-        try {
-            ConfigProviderFactory factory = loader.iterator().next();
-            logger.debugv("ConfigProvider: {0}", factory.getClass().getName());
-            Config.init(factory.create().orElseThrow(() -> new RuntimeException("Failed to load Keycloak configuration")));
-        } catch (NoSuchElementException e) {
-            throw new RuntimeException("No valid ConfigProvider found");
         }
     }
 

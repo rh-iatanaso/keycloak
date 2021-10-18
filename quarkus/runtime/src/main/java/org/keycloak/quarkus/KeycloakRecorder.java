@@ -19,6 +19,7 @@ package org.keycloak.quarkus;
 
 import static org.keycloak.configuration.Configuration.getBuiltTimeProperty;
 import static org.keycloak.configuration.Configuration.getConfig;
+import static org.keycloak.configuration.Configuration.getConfigValue;
 
 import java.util.List;
 import java.util.Map;
@@ -81,102 +82,6 @@ public class KeycloakRecorder {
             Boolean reaugmented) {
         Profile.setInstance(createProfile());
         QuarkusKeycloakSessionFactory.setInstance(new QuarkusKeycloakSessionFactory(factories, defaultProviders, preConfiguredProviders, reaugmented));
-    }
-
-    /**
-     * <p>Validate the build time properties with any property passed during runtime in order to advertise any difference with the
-     * server image state.
-     * 
-     * <p>This method also keep the build time properties available at runtime.
-     * 
-     * 
-     * @param buildTimeProperties the build time properties set when running the last re-augmentation
-     * @param rebuild indicates whether or not the server was re-augmented
-     * @param configArgs the configuration args if provided when the server was re-augmented
-     */
-    public void validateAndSetBuildTimeProperties(Boolean rebuild, String configArgs) {
-        String configHelpText = configArgs;
-
-        for (String propertyName : getConfig().getPropertyNames()) {
-            // we should only validate if there is a server image and if the property is a runtime property
-            if (!shouldValidate(propertyName, rebuild)) {
-                continue;
-            }
-
-            // try to resolve any property set using profiles
-            if (propertyName.startsWith("%")) {
-                propertyName = propertyName.substring(propertyName.indexOf('.') + 1);
-            }
-
-            String buildValue = Environment.getBuiltTimeProperty(propertyName).orElse(null);
-            ConfigValue value = getConfig().getConfigValue(propertyName);
-
-            if (value.getValue() != null && !value.getValue().equalsIgnoreCase(buildValue)) {
-                if (configHelpText != null) {
-                    String cliNameFormat = PropertyMappers.toCLIFormat(propertyName);
-
-                    if (buildValue != null) {
-                        String currentProp = "--" + cliNameFormat.substring(3) + "=" + buildValue;
-                        String newProp = "--" + cliNameFormat.substring(3) + "=" + value.getValue();
-
-                        if (configHelpText.contains(currentProp)) {
-                            LOGGER.warnf("The new value [%s] of the property [%s] in [%s] differs from the value [%s] set into the server image. The new value will override the value set into the server image.",
-                                    value.getValue(), propertyName, value.getConfigSourceName(), buildValue);
-                            configHelpText = configHelpText.replaceAll(currentProp, newProp);
-                        } else if (!configHelpText
-                                .contains("--" + cliNameFormat.substring(3))) {
-                            LOGGER.warnf("The new value [%s] of the property [%s] in [%s] differs from the value [%s] set into the server image. The new value will override the value set into the server image.",
-                                    value.getValue(), propertyName, value.getConfigSourceName(), buildValue);
-                            configHelpText += " " + newProp;
-                        }
-                    } else {
-                        String finalPropertyName = propertyName;
-
-                        if (!StreamSupport.stream(getConfig().getPropertyNames().spliterator(), false)
-                                .filter(new Predicate<String>() {
-                                    @Override
-                                    public boolean test(String s) {
-                                        ConfigValue configValue = getConfig().getConfigValue(s);
-
-                                        return configValue.getConfigSourceName().equals(PersistedConfigSource.NAME);
-                                    }
-                                })
-                                .anyMatch(new Predicate<String>() {
-                                    @Override
-                                    public boolean test(String s) {
-                                        return PropertyMappers.canonicalFormat(finalPropertyName)
-                                                .equalsIgnoreCase(PropertyMappers.canonicalFormat(s));
-                                    }
-                                })) {
-                            String prop = "--" + cliNameFormat.substring(3) + "=" + value.getValue();
-
-                            if (!configHelpText.contains(prop)) {
-                                LOGGER.warnf("New property [%s] set with value [%s] in [%s]. This property is not persisted into the server image.",
-                                        propertyName, value.getValue(), value.getConfigSourceName(), buildValue);
-                                configHelpText += " " + prop;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (configArgs != null && !configArgs.equals(configHelpText)) {
-            LOGGER.warnf("Please, run the 'config' command if you want to persist the new configuration into the server image:\n\n\t%s config %s\n", Environment.getCommand(), String.join(" ", configHelpText.split(",")));
-        }
-    }
-
-    private boolean shouldValidate(String name, boolean rebuild) {
-        return rebuild && name.contains(MicroProfileConfigProvider.NS_KEYCLOAK_PREFIX) 
-                && (!PropertyMappers.isBuildTimeProperty(name)
-                && !"kc.version".equals(name) 
-                && !"kc.config.args".equals(name) 
-                && !"kc.home.dir".equals(name)
-                && !"kc.config.file".equals(name)
-                && !"kc.profile".equals(name)
-                && !"kc.show.config".equals(name)
-                && !"kc.show.config.runtime".equals(name)
-                && !PropertyMappers.toCLIFormat("kc.config.file").equals(name));
     }
 
     /**

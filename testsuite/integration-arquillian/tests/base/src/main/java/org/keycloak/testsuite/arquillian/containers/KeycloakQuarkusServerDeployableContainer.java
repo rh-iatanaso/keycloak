@@ -9,9 +9,12 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
@@ -32,6 +35,7 @@ import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.keycloak.testsuite.arquillian.SuiteContext;
 
@@ -51,6 +55,7 @@ public class KeycloakQuarkusServerDeployableContainer implements DeployableConta
 
     private boolean forceReaugmentation;
     private List<String> additionalArgs = Collections.emptyList();
+    private List<String> runtimeProperties = Collections.emptyList();
 
     @Override
     public Class<KeycloakQuarkusConfiguration> getConfigurationClass() {
@@ -89,12 +94,27 @@ public class KeycloakQuarkusServerDeployableContainer implements DeployableConta
 
     @Override
     public ProtocolMetaData deploy(Archive<?> archive) throws DeploymentException {
-        return null;
+        log.infof("Trying to deploy: " + archive.getName());
+
+        try {
+            deployArchiveToServer(archive);
+            restartServer(true);
+        } catch (Exception e) {
+            throw new DeploymentException(e.getMessage(),e);
+        }
+
+        return new ProtocolMetaData();
     }
 
     @Override
     public void undeploy(Archive<?> archive) throws DeploymentException {
-
+        File wrkDir = configuration.getProvidersPath().resolve("providers").toFile();
+        try {
+            Files.deleteIfExists(wrkDir.toPath().resolve(archive.getName()));
+            restartServer(true);
+        } catch (Exception e) {
+            throw new DeploymentException(e.getMessage(),e);
+        }
     }
 
     @Override
@@ -120,16 +140,15 @@ public class KeycloakQuarkusServerDeployableContainer implements DeployableConta
 
         builder.environment().put("KEYCLOAK_ADMIN", "admin");
         builder.environment().put("KEYCLOAK_ADMIN_PASSWORD", "admin");
-        
+
         if (restart.compareAndSet(false, true)) {
             FileUtils.deleteDirectory(configuration.getProvidersPath().resolve("data").toFile());
         }
 
         if (isReaugmentBeforeStart()) {
-            List<String> commands = new ArrayList<>(Arrays.asList("./kc.sh", "config", "-Dquarkus.http.root-path=/auth"));
+            List<String> commands = new ArrayList<>(Arrays.asList("./kc.sh", "build", "-Dquarkus.http.root-path=/auth", "--http-enabled=true"));
 
             addAdditionalCommands(commands);
-
             ProcessBuilder reaugment = new ProcessBuilder(commands);
 
             reaugment.directory(wrkDir).inheritIO();
@@ -161,9 +180,12 @@ public class KeycloakQuarkusServerDeployableContainer implements DeployableConta
             commands.add("--debug");
             commands.add(System.getProperty("auth.server.debug.port", "5005"));
         }
-
         commands.add("--http-port=" + configuration.getBindHttpPort());
         commands.add("--https-port=" + configuration.getBindHttpsPort());
+
+        //for setting the spi.login-protocol.saml.known-protocols values correctly in keycloak.properties
+        commands.add("-Dauth.server.http.port=" + configuration.getBindHttpPort());
+        commands.add("-Dauth.server.https.port=" + configuration.getBindHttpsPort());
 
         if (configuration.getRoute() != null) {
             commands.add("-Djboss.node.name=" + configuration.getRoute());
@@ -171,9 +193,9 @@ public class KeycloakQuarkusServerDeployableContainer implements DeployableConta
 
         commands.add("--cluster=" + System.getProperty("auth.server.quarkus.cluster.config", "local"));
 
+        commands.addAll(getRuntimeProperties());
         addAdditionalCommands(commands);
-
-        return commands.toArray(new String[commands.size()]);
+        return commands.toArray(new String[0]);
     }
 
     private void addAdditionalCommands(List<String> commands) {
@@ -277,8 +299,33 @@ public class KeycloakQuarkusServerDeployableContainer implements DeployableConta
         additionalArgs = Arrays.asList(args);
     }
 
-    public void resetConfiguration() {
+    public void resetConfiguration(boolean isReAugmentationNeeded) {
         additionalArgs = Collections.emptyList();
-        forceReAugmentation();
+        runtimeProperties = Collections.emptyList();
+        if (isReAugmentationNeeded) {
+            forceReAugmentation();
+        }
+    }
+
+    private void deployArchiveToServer(Archive<?> archive) throws IOException {
+        File providersDir = configuration.getProvidersPath().resolve("providers").toFile();
+        InputStream zipStream = archive.as(ZipExporter.class).exportAsInputStream();
+        Files.copy(zipStream, providersDir.toPath().resolve(archive.getName()), StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    private void restartServer(boolean isReaugmentation) throws Exception {
+        if(isReaugmentation) {
+            forceReaugmentation = true;
+        }
+        stop();
+        start();
+    }
+
+    public List<String> getRuntimeProperties() {
+        return runtimeProperties;
+    }
+
+    public void setRuntimeProperties(List<String> runtimeProperties) {
+        this.runtimeProperties = runtimeProperties;
     }
 }

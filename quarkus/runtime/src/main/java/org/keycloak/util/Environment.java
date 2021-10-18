@@ -17,19 +17,48 @@
 
 package org.keycloak.util;
 
+import java.io.File;
+import java.io.FilenameFilter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
+import io.quarkus.runtime.LaunchMode;
+import io.quarkus.runtime.configuration.ProfileManager;
 import org.apache.commons.lang3.SystemUtils;
 import org.keycloak.configuration.Configuration;
 
 public final class Environment {
 
+    public static final String IMPORT_EXPORT_MODE = "import_export";
+    public static final String CLI_ARGS = "kc.config.args";
+
     public static Boolean isRebuild() {
-        return Boolean.valueOf(System.getProperty("quarkus.launch.rebuild"));
+        return Boolean.getBoolean("quarkus.launch.rebuild");
     }
 
     public static String getHomeDir() {
         return System.getProperty("kc.home.dir");
+    }
+
+    public static Path getHomePath() {
+        String homeDir = getHomeDir();
+
+        if (homeDir != null) {
+            return Paths.get(homeDir);
+        }
+
+        return null;
+    }
+
+    public static Path getProvidersPath() {
+        Path homePath = Environment.getHomePath();
+
+        if (homePath != null) {
+            return homePath.resolve("providers");
+        }
+
+        return null;
     }
 
     public static String getCommand() {
@@ -46,7 +75,7 @@ public final class Environment {
     }
     
     public static String getConfigArgs() {
-        return System.getProperty("kc.config.args");
+        return System.getProperty(CLI_ARGS);
     }
 
     public static String getProfile() {
@@ -80,10 +109,45 @@ public final class Environment {
     }
 
     public static boolean isDevMode() {
-        return "dev".equalsIgnoreCase(getProfile());
+        if ("dev".equalsIgnoreCase(getProfile())) {
+            return true;
+        }
+
+        // if running in quarkus:dev mode
+        return ProfileManager.getLaunchMode() == LaunchMode.DEVELOPMENT;
+    }
+
+    public static boolean isImportExportMode() {
+        return IMPORT_EXPORT_MODE.equalsIgnoreCase(getProfile());
     }
 
     public static boolean isWindows() {
         return SystemUtils.IS_OS_WINDOWS;
+    }
+
+    public static void forceDevProfile() {
+        System.setProperty("kc.profile", "dev");
+        System.setProperty("quarkus.profile", "dev");
+    }
+
+    public static File[] getProviderFiles() {
+        Path providersPath = Environment.getProvidersPath();
+
+        if (providersPath == null) {
+            return new File[] {};
+        }
+
+        File providersDir = providersPath.toFile();
+
+        if (!providersDir.exists() || !providersDir.isDirectory()) {
+            throw new RuntimeException("The 'providers' directory does not exist or is not a valid directory.");
+        }
+
+        return providersDir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".jar");
+            }
+        });
     }
 }

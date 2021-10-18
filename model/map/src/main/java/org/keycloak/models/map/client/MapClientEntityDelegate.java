@@ -30,7 +30,7 @@ public class MapClientEntityDelegate extends MapClientEntityLazyDelegate {
     }
 
     @Override
-    protected MapClientEntity getDelegate() {
+    protected MapClientEntity getWriteDelegate() {
         return delegate;
     }
 }

@@ -54,7 +54,8 @@ public final class PropertyMappers {
             Boolean enabled = Boolean.valueOf(value);
             ConfigValue proxy = context.proceed(MicroProfileConfigProvider.NS_KEYCLOAK_PREFIX + "proxy");
 
-            if (Environment.isDevMode() || (proxy != null && "edge".equalsIgnoreCase(proxy.getValue()))) {
+            if (Environment.isDevMode() || Environment.isImportExportMode()
+                    || (proxy != null && "edge".equalsIgnoreCase(proxy.getValue()))) {
                 enabled = true;
             }
             
@@ -162,8 +163,20 @@ public final class PropertyMappers {
     }
 
     public static boolean isBuildTimeProperty(String name) {
-        return PropertyMapper.MAPPERS.entrySet().stream()
-                .anyMatch(entry -> entry.getValue().getFrom().equals(name) && entry.getValue().isBuildTime());
+        if ("kc.features".equals(name)) {
+            return true;
+        }
+        return name.startsWith(MicroProfileConfigProvider.NS_KEYCLOAK_PREFIX)
+                && PropertyMapper.MAPPERS.entrySet().stream()
+                    .anyMatch(entry -> entry.getValue().getFrom().equals(name) && entry.getValue().isBuildTime())
+                && !"kc.version".equals(name)
+                && !Environment.CLI_ARGS.equals(name)
+                && !"kc.home.dir".equals(name)
+                && !"kc.config.file".equals(name)
+                && !"kc.profile".equals(name)
+                && !"kc.show.config".equals(name)
+                && !"kc.show.config.runtime".equals(name)
+                && !PropertyMappers.toCLIFormat("kc.config.file").equals(name);
     }
 
     public static String toCLIFormat(String name) {
