@@ -34,10 +34,6 @@
         </button>
         <button id="copyRecoveryCodes" class="pf-c-button pf-m-link" type="button">
             <i class="pficon-blueprint"></i> ${msg("recovery-codes-copy")}
-            <div class="pf-c-tooltip pf-m-top" role="tooltip" aria-describedby="codes-copied">
-                <div class="pf-c-tooltip__arrow"></div>
-                <div class="pf-c-tooltip__content" id="codes-copied">${msg("recovery-codes-copied")}</div>
-            </div>
         </button>
     </div>
 
@@ -87,7 +83,8 @@
             document.body.removeChild(tmpTextarea);
         }
 
-        document.getElementById("copyRecoveryCodes").addEventListener('click', function () {
+        var copyButton = document.getElementById("copyRecoveryCodes");
+        copyButton && copyButton.addEventListener('click', function () {
             copyRecoveryCodes();
             setTimeout(function() {
                 console.log("copied");
