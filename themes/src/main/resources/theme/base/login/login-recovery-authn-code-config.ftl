@@ -121,27 +121,24 @@
             };
 
             return fileBodyContent =
-                "Keep these recovery codes somewhere safe.\n\n" +
+                "${msg("recovery-codes-download-file-header")}\n\n" +
                 recoveryCodeList + "\n" +
-                "Recovery codes are single-use passcodes that allow you to log in to your account if you do not have access to your authenticator.\n\n" +
-                "These codes were generated on " + dt.toLocaleString('en-US', options);
+                "${msg("recovery-codes-download-file-description")}\n\n" +
+                "${msg("recovery-codes-download-file-date")} " + dt.toLocaleString('en-US', options);
         }
 
         function setUpDownloadLinkAndDownload(filename, text) {
             var el = document.createElement('a');
-
             el.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
             el.setAttribute('download', filename);
             el.style.display = 'none';
             document.body.appendChild(el);
-
             el.click();
-
             document.body.removeChild(el);
         }
 
         function downloadRecoveryCodes() {
-            setUpDownloadLinkAndDownload('red-hat-recovery-codes.txt', buildFileContent());
+            setUpDownloadLinkAndDownload('kc-download-recovery-codes.txt', buildFileContent());
         }
 
         var downloadButton = document.getElementById("downloadRecoveryCodes");
