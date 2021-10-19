@@ -92,6 +92,20 @@
         });
 
         /* download recovery codes  */
+        function formatCurrentDateTime() {
+            var dt = new Date();
+            var options = {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                timeZoneName: 'short'
+            };
+
+            return dt.toLocaleString('en-US', options);
+        }
+
         function parseRecoveryCodeList() {
             var recoveryCodes = document.querySelectorAll(".kc-recovery-codes-list li");
             var recoveryCodeList = "";
@@ -104,7 +118,7 @@
             return recoveryCodeList;
         }
 
-        function buildFileContent() {
+        function buildDownloadContent() {
             var recoveryCodeList = parseRecoveryCodeList();
             var dt = new Date();
             var options = {
@@ -120,7 +134,7 @@
                 "${msg("recovery-codes-download-file-header")}\n\n" +
                 recoveryCodeList + "\n" +
                 "${msg("recovery-codes-download-file-description")}\n\n" +
-                "${msg("recovery-codes-download-file-date")} " + dt.toLocaleString('en-US', options);
+                "${msg("recovery-codes-download-file-date")} " + formatCurrentDateTime();
         }
 
         function setUpDownloadLinkAndDownload(filename, text) {
@@ -134,11 +148,40 @@
         }
 
         function downloadRecoveryCodes() {
-            setUpDownloadLinkAndDownload('kc-download-recovery-codes.txt', buildFileContent());
+            setUpDownloadLinkAndDownload('kc-download-recovery-codes.txt', buildDownloadContent());
         }
 
         var downloadButton = document.getElementById("downloadRecoveryCodes");
         downloadButton && downloadButton.addEventListener("click", downloadRecoveryCodes);
+
+        /* print recovery codes */
+        function buildPrintContent() {
+            var recoveryCodeListHTML = document.getElementById('kc-recovery-codes-list').innerHTML;
+            var styles =
+                `@page { size: auto;  margin-top: 0; }
+                body { width: 480px; }
+                div { list-style-type: none; font-family: monospace }
+                p:first-of-type { margin-top: 48px }`
+
+            return printFileContent =
+                "<html><style>" + styles + "</style><body>" +
+                "<title>kc-download-recovery-codes</title>" +
+                "<p>${msg("recovery-codes-download-file-header")}</p>" +
+                "<div>" + recoveryCodeListHTML + "</div>" +
+                "<p>${msg("recovery-codes-download-file-description")}</p>" +
+                "<p>${msg("recovery-codes-download-file-date")} " + formatCurrentDateTime() + "</p>" +
+                "</body></html>";
+        }
+
+        function printRecoveryCodes() {
+            var w = window.open();
+            w.document.write(buildPrintContent());
+            w.print();
+            w.close();
+        }
+
+        var printButton = document.getElementById("printRecoveryCodes");
+        printButton && printButton.addEventListener("click", printRecoveryCodes);
     </script>
 </#if>
 </@layout.registrationLayout>
