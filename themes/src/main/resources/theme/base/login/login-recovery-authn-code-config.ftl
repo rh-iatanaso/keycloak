@@ -5,7 +5,7 @@
     ${msg("recovery-code-config-header")}
 <#elseif section = "form">
     <!-- warning -->
-    <div class="pf-c-alert pf-m-warning ${properties.kcRecoveryCodesWarning}" aria-label="Warning alert">
+    <div class="pf-c-alert pf-m-warning pf-m-inline ${properties.kcRecoveryCodesWarning}" aria-label="Warning alert">
         <div class="pf-c-alert__icon">
             <i class="pficon-warning-triangle-o" aria-hidden="true"></i>
         </div>
