@@ -705,7 +705,7 @@ ul#kc-totp-supported-apps {
 }
 .kc-recovery-codes-list {
     list-style: none;
-    columns: 3;
+    columns: 2;
     margin: 16px 0;
     padding: 16px 16px 8px 16px;
     border: 1px solid #D2D2D2;

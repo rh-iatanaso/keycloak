@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 public class RecoveryAuthnCodesUtils {
 
-    private static final int QUANTITY_OF_CODES_TO_GENERATE = 15;
+    private static final int QUANTITY_OF_CODES_TO_GENERATE = 12;
     private static final RandomString RANDOM_GENERATOR = new RandomString(12, new SecureRandom(),
             RandomString.upper + RandomString.digits);
     public static final String NOM_ALGORITHM_TO_HASH = Algorithm.RS512;
