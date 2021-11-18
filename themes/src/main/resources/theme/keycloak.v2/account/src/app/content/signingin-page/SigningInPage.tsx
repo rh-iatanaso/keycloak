@@ -60,12 +60,20 @@ type CredType = string;
 type CredTypeMap = Map<CredType, CredentialContainer>;
 type CredContainerMap = Map<CredCategory, CredTypeMap>;
 
+interface CredData {
+    algorithm?: string;
+    hashIterations?: number;
+    remainingCodes?: number;
+    totalCodes?: number;
+}
+
 interface UserCredential {
     id: string;
     type: string;
     userLabel: string;
     createdDate?: number;
     strCreatedDate?: string;
+    credentialData?: string;
 }
 
 // A CredentialContainer is unique by combo of credential type and credential category
@@ -207,11 +215,12 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
                 <DataListItem key='no-credentials-list-item' aria-labelledby='no-credentials-list-item'>
                     <DataListItemRow key='no-credentials-list-item-row'>
                         <DataListItemCells
-                                    dataListCells={[
-                                        <DataListCell key={'no-credentials-cell-0'}/>,
-                                        <strong id={`${type}-not-set-up`} key={'no-credentials-cell-1'}><Msg msgKey='notSetUp' params={[localizedDisplayName]}/></strong>,
-                                        <DataListCell key={'no-credentials-cell-2'}/>
-                                    ]}/>
+                            dataListCells={[
+                                <DataListCell key={'no-credentials-cell-0'}/>,
+                                <strong id={`${type}-not-set-up`} key={'no-credentials-cell-1'}><Msg msgKey='notSetUp' params={[localizedDisplayName]}/></strong>,
+                                <DataListCell key={'no-credentials-cell-2'}/>
+                            ]}
+                        />
                     </DataListItemRow>
                 </DataListItem>
             );
@@ -235,11 +244,12 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
                     <DataListItem id={`${SigningInPage.credElementId(type, credential.id, 'row')}`} key={'credential-list-item-' + credential.id} aria-labelledby={'credential-list-item-' + credential.userLabel}>
                         <DataListItemRow key={'userCredentialRow-' + credential.id}>
                             <DataListItemCells dataListCells={this.credentialRowCells(credential, type)}/>
-
-                            <CredentialAction credential={credential}
-                                              removeable={removeable}
-                                              updateAction={updateAIA}
-                                              credRemover={this.handleRemove}/>
+                            <CredentialAction
+                                credential={credential}
+                                removeable={removeable}
+                                updateAction={updateAIA}
+                                credRemover={this.handleRemove}
+                            />
                         </DataListItemRow>
                     </DataListItem>
                 ))
@@ -249,7 +259,32 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
 
     private credentialRowCells(credential: UserCredential, type: string): React.ReactNode[] {
         const credRowCells: React.ReactNode[] = [];
-        credRowCells.push(<DataListCell id={`${SigningInPage.credElementId(type, credential.id, 'label')}`} key={'userLabel-' + credential.id}>{credential.userLabel}</DataListCell>);
+        const credData: CredData = JSON.parse(credential.credentialData!);
+        credRowCells.push(
+            <DataListCell id={`${SigningInPage.credElementId(type, credential.id, 'label')}`} key={'userLabel-' + credential.id}>
+                {credential.userLabel}
+                {credData.remainingCodes && credData.totalCodes &&
+                    <div>{credData.totalCodes - credData.remainingCodes}/{credData.totalCodes} recovery codes used</div>
+                }
+                {credData.remainingCodes && credData.remainingCodes < 4 &&
+                    <>
+                        <br />
+                        <div className="pf-c-alert pf-m-warning pf-m-inline" aria-label="Success alert">
+                            <div className="pf-c-alert__icon">
+                                <i className="pficon-warning-triangle-o" aria-hidden="true"></i>
+                            </div>
+                            <h4 className="pf-c-alert__title">
+                                <span className="pf-screen-reader">Warning alert:</span>
+                                {credData.remainingCodes} recovery codes remaining
+                            </h4>
+                            <div className="pf-c-alert__description">
+                                Generate new codes to ensure access to your account
+                            </div>
+                        </div>
+                    </>
+                }
+            </DataListCell>
+        );
         if (credential.strCreatedDate) {
             credRowCells.push(<DataListCell id={`${SigningInPage.credElementId(type, credential.id, 'created-at')}`} key={'created-' + credential.id}><strong><Msg msgKey='credentialCreatedAt'/>: </strong>{credential.strCreatedDate}</DataListCell>);
             credRowCells.push(<DataListCell key={'spacer-' + credential.id}/>);
@@ -330,12 +365,15 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
 };
 
 type CredRemover = (credentialId: string, userLabel: string) => void;
-interface CredentialActionProps {credential: UserCredential;
-                                removeable: boolean;
-                                updateAction: AIACommand;
-                                credRemover: CredRemover;};
-class CredentialAction extends React.Component<CredentialActionProps> {
 
+interface CredentialActionProps {
+    credential: UserCredential;
+    removeable: boolean;
+    updateAction: AIACommand;
+    credRemover: CredRemover;
+};
+
+class CredentialAction extends React.Component<CredentialActionProps> {
     render(): React.ReactNode {
         if (this.props.updateAction) {
             return (
@@ -350,11 +388,11 @@ class CredentialAction extends React.Component<CredentialActionProps> {
             return (
                 <DataListAction aria-labelledby='foo' aria-label='foo action' id={'removeAction-' + this.props.credential.id }>
                     <ContinueCancelModal buttonTitle='remove'
-                                        buttonId={`${SigningInPage.credElementId(this.props.credential.type, this.props.credential.id, 'remove')}`}
-                                        modalTitle={Msg.localize('removeCred', [userLabel])}
-                                        modalMessage={Msg.localize('stopUsingCred', [userLabel])}
-                                        onContinue={() => this.props.credRemover(this.props.credential.id, userLabel)}
-                                            />
+                        buttonId={`${SigningInPage.credElementId(this.props.credential.type, this.props.credential.id, 'remove')}`}
+                        modalTitle={Msg.localize('removeCred', [userLabel])}
+                        modalMessage={Msg.localize('stopUsingCred', [userLabel])}
+                        onContinue={() => this.props.credRemover(this.props.credential.id, userLabel)}
+                    />
                 </DataListAction>
             )
         }

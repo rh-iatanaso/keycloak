@@ -84,8 +84,10 @@ public class RequiredActionsTest extends AbstractAuthenticationTest {
 
         // Dummy RequiredAction is not registered in the realm and WebAuthn actions
         List<RequiredActionProviderSimpleRepresentation> result = authMgmtResource.getUnregisteredRequiredActions();
-        Assert.assertEquals(4, result.size());
-        RequiredActionProviderSimpleRepresentation action = result.get(0);
+        Assert.assertEquals(5, result.size());
+        RequiredActionProviderSimpleRepresentation action = result.stream().filter(
+                a -> a.getProviderId().equals(DummyRequiredActionFactory.PROVIDER_ID)
+        ).findFirst().get();
         Assert.assertEquals(DummyRequiredActionFactory.PROVIDER_ID, action.getProviderId());
         Assert.assertEquals("Dummy Action", action.getName());
 
