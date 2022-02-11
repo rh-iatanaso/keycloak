@@ -54,6 +54,8 @@ public class RecoveryAuthnCodesCredentialProvider
         UserModel user = metadataContext.getUser();
         if (user != null && !isConfiguredFor(session.getContext().getRealm(), user, getType())) {
             builder.createAction(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES.name());
+        } else {
+            builder.updateAction(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES.name());
         }
         return builder.build(session);
     }
