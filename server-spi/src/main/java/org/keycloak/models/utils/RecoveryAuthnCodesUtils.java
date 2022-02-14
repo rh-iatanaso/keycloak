@@ -23,7 +23,6 @@ public class RecoveryAuthnCodesUtils {
     public static final int NUM_HASH_ITERATIONS = 1;
     public static final String RECOVERY_AUTHN_CODES_INPUT_DEFAULT_ERROR_MESSAGE = "recovery-codes-error-invalid";
     public static final String FIELD_RECOVERY_CODE_IN_BROWSER_FLOW = "recoveryCodeInput";
-    public static final String FIELD_RECOVERY_CODE_IN_DIRECT_GRANT_FLOW = "recovery_code";
 
     public static String hashRawCode(String rawGeneratedCode) {
         Objects.requireNonNull(rawGeneratedCode, "rawGeneratedCode cannot be null");

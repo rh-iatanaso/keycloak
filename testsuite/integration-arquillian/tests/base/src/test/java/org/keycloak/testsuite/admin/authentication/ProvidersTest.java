@@ -226,8 +226,6 @@ public class ProvidersTest extends AbstractAuthenticationTest {
                 "Flow is executed only if the configured LOA or a higher one has been requested but not yet satisfied. After the flow is successfully finished, the LOA in the session will be updated to value prescribed by this condition.");
         addProviderInfo(result, "auth-recovery-authn-code-form","Recovery Authentication Code Form",
                 "Validates a Recovery Authentication Code");
-        addProviderInfo(result, "direct-grant-valid-recvry-authn-code","Recovery Authentication Code Validator for DirectGrant Flow",
-                "Validates the Recovery Authentication Code supplied as a 'recovery_code' form parameter in direct grant request");
         return result;
     }
 
