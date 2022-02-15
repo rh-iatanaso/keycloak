@@ -27,7 +27,6 @@ org.keycloak.authentication.authenticators.conditional.ConditionalRoleAuthentica
 org.keycloak.authentication.authenticators.conditional.ConditionalUserConfiguredAuthenticatorFactory
 org.keycloak.authentication.authenticators.conditional.ConditionalLoaAuthenticatorFactory
 org.keycloak.authentication.authenticators.directgrant.ValidateOTP
-org.keycloak.authentication.authenticators.directgrant.ValidateRecoveryAuthnCode
 org.keycloak.authentication.authenticators.directgrant.ValidatePassword
 org.keycloak.authentication.authenticators.directgrant.ValidateUsername
 org.keycloak.authentication.authenticators.resetcred.ResetCredentialChooseUser
