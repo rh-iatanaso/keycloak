@@ -595,6 +595,7 @@ public class ModelToRepresentation {
         rep.setCreatedDate(cred.getCreatedDate());
         rep.setSecretData(cred.getSecretData());
         rep.setCredentialData(cred.getCredentialData());
+        rep.setCredentialMetadata(cred.getCredentialMetadata());
         return rep;
     }
 

@@ -274,33 +274,31 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
         const credRowCells: React.ReactNode[] = [];
         const credential = credMetadata.credential;
         const credData: CredData = JSON.parse(credential.credentialData!);
-        const infoMessage = credMetadata.infoMessage ? JSON.parse(credMetadata.infoMessage) : null;
-        const warningMessageTitle = credMetadata.warningMessageTitle ? JSON.parse(credMetadata.warningMessageTitle) : null;
-        const warningMessageDescription = credMetadata.warningMessageDescription ? JSON.parse(credMetadata.warningMessageDescription) : null;
+        const credMetadata: CredMetadata = credential.credentialMetadata ? JSON.parse(credential.credentialMetadata!) : {};
         credRowCells.push(
             <DataListCell id={`${SigningInPage.credElementId(type, credential.id, 'label')}`} key={'userLabel-' + credential.id}>
                 {credential.userLabel}
-                {infoMessage &&
-                    <div>{Msg.localize(infoMessage.key, infoMessage.parameters)}</div>
-                }
-                {warningMessageTitle &&
-                    <>
-                        <br />
-                        <div className="pf-c-alert pf-m-warning pf-m-inline" aria-label="Success alert">
-                            <div className="pf-c-alert__icon">
-                                <i className="pficon-warning-triangle-o" aria-hidden="true"></i>
-                            </div>
-                            <h4 className="pf-c-alert__title">
-                                <span className="pf-screen-reader">Warning alert:</span>
-                                {Msg.localize(warningMessageTitle.key, warningMessageTitle.parameters)}
-                            </h4>
-                            {credMetadata.warningMessageDescription &&
-                                <div className="pf-c-alert__description">
-                                    {Msg.localize(warningMessageDescription.key, warningMessageDescription.parameters)}
-                                </div>
-                            }
-                        </div>
-                    </>
+                {credMetadata && credMetadata.infoMessage &&
+					<div>{Msg.localize(credMetadata.infoMessage.key, credMetadata.infoMessage.parameters)}</div>
+				}
+				{credMetadata && credMetadata.warningMessageTitle &&
+					<>
+						<br />
+						<div className="pf-c-alert pf-m-warning pf-m-inline" aria-label="Success alert">
+							<div className="pf-c-alert__icon">
+								<i className="pficon-warning-triangle-o" aria-hidden="true"></i>
+							</div>
+							<h4 className="pf-c-alert__title">
+								<span className="pf-screen-reader">Warning alert:</span>
+								{Msg.localize(credMetadata.warningMessageTitle.key, credMetadata.warningMessageTitle.parameters)}
+							</h4>
+							{credMetadata.warningMessageDescription &&
+								<div className="pf-c-alert__description">
+									{Msg.localize(credMetadata.warningMessageDescription.key, credMetadata.warningMessageDescription.parameters)}
+								</div>
+							}
+						</div>
+					</>
                 }
             </DataListCell>
         );
