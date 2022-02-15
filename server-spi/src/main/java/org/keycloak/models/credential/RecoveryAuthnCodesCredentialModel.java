@@ -84,11 +84,7 @@ public class RecoveryAuthnCodesCredentialModel extends CredentialModel {
         RecoveryAuthnCodesCredentialData credentialData;
         RecoveryAuthnCodesSecretData secretData = null;
         RecoveryAuthnCodesCredentialModel newModel;
-//        CredentialMetadata credentialMetadata = null;
         try {
-//            if (credentialModel.getCredentialMetadata() != null) {
-//                credentialMetadata = JsonSerialization.readValue(credentialModel.getCredentialMetadata(), CredentialMetadata.class);
-//            }
             credentialData = JsonSerialization.readValue(credentialModel.getCredentialData(),
                     RecoveryAuthnCodesCredentialData.class);
             if (credentialModel.getSecretData() != null) {
