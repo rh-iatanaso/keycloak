@@ -47,4 +47,8 @@ public interface CredentialProvider<T extends CredentialModel> extends Provider 
     }
 
     CredentialTypeMetadata getCredentialTypeMetadata(CredentialTypeMetadataContext metadataContext);
+
+    default CredentialMetadata getCredentialMetadata(T credentialModel, CredentialTypeMetadata credentialTypeMetadata) {
+        return new CredentialMetadata();
+    }
 }

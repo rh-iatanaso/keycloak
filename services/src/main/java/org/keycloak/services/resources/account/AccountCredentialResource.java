@@ -180,12 +180,26 @@ public class AccountCredentialResource {
                     .build(session);
             CredentialTypeMetadata metadata = credentialProvider.getCredentialTypeMetadata(ctx);
 
+
             List<CredentialRepresentation> userCredentialModels = null;
             if (includeUserCredentials) {
-                userCredentialModels = models.stream()
+                List<CredentialModel> modelsOfType = models.stream()
                         .filter(credentialModel -> credentialProvider.getType().equals(credentialModel.getType()))
-                        .map(ModelToRepresentation::toRepresentation)
                         .collect(Collectors.toList());
+
+                modelsOfType.stream()
+                        .forEach(m -> {
+                            try {
+                                CredentialMetadata credentialMetadata = credentialProvider.getCredentialMetadata(
+                                        credentialProvider.getCredentialFromModel(m), metadata
+                                );
+                                m.setCredentialMetadata(JsonSerialization.writeValueAsString(credentialMetadata));
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        });
+
+                userCredentialModels = modelsOfType.stream().map(ModelToRepresentation::toRepresentation).collect(Collectors.toList());
 
                 if (userCredentialModels.isEmpty() &&
                         session.userCredentialManager().isConfiguredFor(realm, user, credentialProvider.getType())) {

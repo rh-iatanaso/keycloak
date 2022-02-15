@@ -36,6 +36,7 @@ public class CredentialRepresentation {
     private Long createdDate;
     private String secretData;
     private String credentialData;
+    private String credentialMetadata;
     private Integer priority;
 
     private String value;
@@ -96,6 +97,14 @@ public class CredentialRepresentation {
     }
     public void setCredentialData(String credentialData) {
         this.credentialData = credentialData;
+    }
+
+    public String getCredentialMetadata() {
+        return credentialMetadata;
+    }
+
+    public void setCredentialMetadata(String credentialMetadata) {
+        this.credentialMetadata = credentialMetadata;
     }
 
     public Integer getPriority() {

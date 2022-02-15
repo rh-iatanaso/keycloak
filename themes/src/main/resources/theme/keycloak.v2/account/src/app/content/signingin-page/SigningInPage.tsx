@@ -67,6 +67,17 @@ interface CredData {
     totalCodes?: number;
 }
 
+interface LocalizedMessage {
+	key: string;
+	parameters: string[];
+}
+
+interface CredMetadata {
+	infoMessage?: LocalizedMessage;
+	warningMessageTitle?: LocalizedMessage;
+	warningMessageDescription?: LocalizedMessage;
+}
+
 interface UserCredential {
     id: string;
     type: string;
@@ -74,6 +85,7 @@ interface UserCredential {
     createdDate?: number;
     strCreatedDate?: string;
     credentialData?: string;
+    credentialMetadata?: string;
 }
 
 // A CredentialContainer is unique by combo of credential type and credential category
@@ -260,28 +272,31 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
     private credentialRowCells(credential: UserCredential, type: string): React.ReactNode[] {
         const credRowCells: React.ReactNode[] = [];
         const credData: CredData = JSON.parse(credential.credentialData!);
+        const credMetadata: CredMetadata = credential.credentialMetadata ? JSON.parse(credential.credentialMetadata!) : {};
         credRowCells.push(
             <DataListCell id={`${SigningInPage.credElementId(type, credential.id, 'label')}`} key={'userLabel-' + credential.id}>
                 {credential.userLabel}
-                {credData.remainingCodes && credData.totalCodes &&
-                    <div>{credData.totalCodes - credData.remainingCodes}/{credData.totalCodes} recovery codes used</div>
-                }
-                {credData.remainingCodes && credData.remainingCodes < 4 &&
-                    <>
-                        <br />
-                        <div className="pf-c-alert pf-m-warning pf-m-inline" aria-label="Success alert">
-                            <div className="pf-c-alert__icon">
-                                <i className="pficon-warning-triangle-o" aria-hidden="true"></i>
-                            </div>
-                            <h4 className="pf-c-alert__title">
-                                <span className="pf-screen-reader">Warning alert:</span>
-                                {credData.remainingCodes} recovery codes remaining
-                            </h4>
-                            <div className="pf-c-alert__description">
-                                Generate new codes to ensure access to your account
-                            </div>
-                        </div>
-                    </>
+                {credMetadata && credMetadata.infoMessage &&
+					<div>{Msg.localize(credMetadata.infoMessage.key, credMetadata.infoMessage.parameters)}</div>
+				}
+				{credMetadata && credMetadata.warningMessageTitle &&
+					<>
+						<br />
+						<div className="pf-c-alert pf-m-warning pf-m-inline" aria-label="Success alert">
+							<div className="pf-c-alert__icon">
+								<i className="pficon-warning-triangle-o" aria-hidden="true"></i>
+							</div>
+							<h4 className="pf-c-alert__title">
+								<span className="pf-screen-reader">Warning alert:</span>
+								{Msg.localize(credMetadata.warningMessageTitle.key, credMetadata.warningMessageTitle.parameters)}
+							</h4>
+							{credMetadata.warningMessageDescription &&
+								<div className="pf-c-alert__description">
+									{Msg.localize(credMetadata.warningMessageDescription.key, credMetadata.warningMessageDescription.parameters)}
+								</div>
+							}
+						</div>
+					</>
                 }
             </DataListCell>
         );
