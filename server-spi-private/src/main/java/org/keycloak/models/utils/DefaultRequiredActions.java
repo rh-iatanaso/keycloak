@@ -68,7 +68,7 @@ public class DefaultRequiredActions {
             recoveryCodes.setName("Recovery Authentication Codes");
             recoveryCodes.setProviderId(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES.name());
             recoveryCodes.setDefaultAction(false);
-            recoveryCodes.setPriority(5);
+            recoveryCodes.setPriority(70);
             realm.addRequiredActionProvider(recoveryCodes);
         }
 
