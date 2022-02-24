@@ -595,7 +595,28 @@ public class ModelToRepresentation {
         rep.setCreatedDate(cred.getCreatedDate());
         rep.setSecretData(cred.getSecretData());
         rep.setCredentialData(cred.getCredentialData());
-        rep.setCredentialMetadata(cred.getCredentialMetadata());
+        return rep;
+    }
+
+    public static CredentialMetadataRepresentation toRepresentation(CredentialMetadata credentialMetadata) {
+        CredentialMetadataRepresentation rep = new CredentialMetadataRepresentation();
+
+        rep.setCredential(ModelToRepresentation.toRepresentation(credentialMetadata.getCredentialModel()));
+        try {
+            rep.setInfoMessage(JsonSerialization.writeValueAsString(credentialMetadata.getInfoMessage()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            rep.setWarningMessageDescription(JsonSerialization.writeValueAsString(credentialMetadata.getWarningMessageDescription()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            rep.setWarningMessageTitle(JsonSerialization.writeValueAsString(credentialMetadata.getWarningMessageTitle()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return rep;
     }
 

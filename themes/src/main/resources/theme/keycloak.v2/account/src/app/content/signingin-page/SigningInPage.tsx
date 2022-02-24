@@ -274,7 +274,6 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
         const credRowCells: React.ReactNode[] = [];
         const credential = credMetadata.credential;
         const credData: CredData = JSON.parse(credential.credentialData!);
-        const credMetadata: CredMetadata = credential.credentialMetadata ? JSON.parse(credential.credentialMetadata!) : {};
         credRowCells.push(
             <DataListCell id={`${SigningInPage.credElementId(type, credential.id, 'label')}`} key={'userLabel-' + credential.id}>
                 {credential.userLabel}
