@@ -2,6 +2,8 @@ package org.keycloak.models.credential;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import org.keycloak.credential.CredentialMetadata;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.models.credential.dto.RecoveryAuthnCodeRepresentation;
 import org.keycloak.models.credential.dto.RecoveryAuthnCodesCredentialData;
@@ -16,8 +18,13 @@ public class RecoveryAuthnCodesCredentialModel extends CredentialModel {
 
     public static final String TYPE = "recovery-authn-codes";
 
+    public static final String RECOVERY_CODES_NUMBER_USED = "recovery-codes-number-used";
+    public static final String RECOVERY_CODES_NUMBER_REMAINING = "recovery-codes-number-remaining";
+    public static final String RECOVERY_CODES_GENERATE_NEW_CODES = "recovery-codes-generate-new-codes";
+
     private final RecoveryAuthnCodesCredentialData credentialData;
     private final RecoveryAuthnCodesSecretData secretData;
+    private final CredentialMetadata credentialMetadata = null;
 
     private RecoveryAuthnCodesCredentialModel(RecoveryAuthnCodesCredentialData credentialData,
             RecoveryAuthnCodesSecretData secretData) {
@@ -75,12 +82,14 @@ public class RecoveryAuthnCodesCredentialModel extends CredentialModel {
 
     public static RecoveryAuthnCodesCredentialModel createFromCredentialModel(CredentialModel credentialModel) {
         RecoveryAuthnCodesCredentialData credentialData;
-        RecoveryAuthnCodesSecretData secretData;
+        RecoveryAuthnCodesSecretData secretData = null;
         RecoveryAuthnCodesCredentialModel newModel;
         try {
             credentialData = JsonSerialization.readValue(credentialModel.getCredentialData(),
                     RecoveryAuthnCodesCredentialData.class);
-            secretData = JsonSerialization.readValue(credentialModel.getSecretData(), RecoveryAuthnCodesSecretData.class);
+            if (credentialModel.getSecretData() != null) {
+                secretData = JsonSerialization.readValue(credentialModel.getSecretData(), RecoveryAuthnCodesSecretData.class);
+            }
             newModel = new RecoveryAuthnCodesCredentialModel(credentialData, secretData);
             newModel.setUserLabel(credentialModel.getUserLabel());
             newModel.setCreatedDate(credentialModel.getCreatedDate());

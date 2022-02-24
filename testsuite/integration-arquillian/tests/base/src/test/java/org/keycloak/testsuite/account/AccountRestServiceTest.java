@@ -541,7 +541,7 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
                 "password-display-name", "password-help-text", "kcAuthenticatorPasswordClass",
                 null, UserModel.RequiredAction.UPDATE_PASSWORD.toString(), false, 1);
 
-        CredentialRepresentation password1 = password.getUserCredentials().get(0);
+        CredentialRepresentation password1 = password.getUserCredentials().get(0).getCredential();
         assertNull(password1.getSecretData());
         Assert.assertNotNull(password1.getCredentialData());
 
