@@ -603,17 +603,17 @@ public class ModelToRepresentation {
 
         rep.setCredential(ModelToRepresentation.toRepresentation(credentialMetadata.getCredentialModel()));
         try {
-            rep.setInfoMessage(JsonSerialization.writeValueAsString(credentialMetadata.getInfoMessage()));
+            rep.setInfoMessage(credentialMetadata.getInfoMessage() == null ? null : JsonSerialization.writeValueAsString(credentialMetadata.getInfoMessage()));
         } catch (IOException e) {
             e.printStackTrace();
         }
         try {
-            rep.setWarningMessageDescription(JsonSerialization.writeValueAsString(credentialMetadata.getWarningMessageDescription()));
+            rep.setWarningMessageDescription(credentialMetadata.getWarningMessageDescription() == null ? null : JsonSerialization.writeValueAsString(credentialMetadata.getWarningMessageDescription()));
         } catch (IOException e) {
             e.printStackTrace();
         }
         try {
-            rep.setWarningMessageTitle(JsonSerialization.writeValueAsString(credentialMetadata.getWarningMessageTitle()));
+            rep.setWarningMessageTitle(credentialMetadata.getWarningMessageTitle() == null ? null : JsonSerialization.writeValueAsString(credentialMetadata.getWarningMessageTitle()));
         } catch (IOException e) {
             e.printStackTrace();
         }
