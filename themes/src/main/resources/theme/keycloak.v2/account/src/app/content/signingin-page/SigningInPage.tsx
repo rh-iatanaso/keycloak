@@ -68,15 +68,15 @@ interface CredData {
 }
 
 interface LocalizedMessage {
-	key: string;
-	parameters: string[];
+    key: string;
+    parameters: string[];
 }
 
 interface CredMetadata {
-	infoMessage?: string;
-	warningMessageTitle?: string;
-	warningMessageDescription?: string;
-	credential: UserCredential;
+    infoMessage?: string;
+    warningMessageTitle?: string;
+    warningMessageDescription?: string;
+    credential: UserCredential;
 }
 
 interface UserCredential {
@@ -284,23 +284,23 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
 					<div>{Msg.localize(infoMessage.key, infoMessage.parameters)}</div>
 				}
 				{warningMessageTitle &&
-					<>
-						<br />
-						<div className="pf-c-alert pf-m-warning pf-m-inline" aria-label="Success alert">
-							<div className="pf-c-alert__icon">
-								<i className="pficon-warning-triangle-o" aria-hidden="true"></i>
-							</div>
-							<h4 className="pf-c-alert__title">
-								<span className="pf-screen-reader">Warning alert:</span>
-								{Msg.localize(warningMessageTitle.key, warningMessageTitle.parameters)}
-							</h4>
-							{credMetadata.warningMessageDescription &&
-								<div className="pf-c-alert__description">
-									{Msg.localize(warningMessageDescription.key, warningMessageDescription.parameters)}
-								</div>
-							}
-						</div>
-					</>
+                    <>
+                        <br />
+                        <div className="pf-c-alert pf-m-warning pf-m-inline" aria-label="Success alert">
+                            <div className="pf-c-alert__icon">
+                                <i className="pficon-warning-triangle-o" aria-hidden="true"></i>
+                            </div>
+                            <h4 className="pf-c-alert__title">
+                                <span className="pf-screen-reader">Warning alert:</span>
+                                {Msg.localize(warningMessageTitle.key, warningMessageTitle.parameters)}
+                            </h4>
+                            {credMetadata.warningMessageDescription &&
+                                <div className="pf-c-alert__description">
+                                    {Msg.localize(warningMessageDescription.key, warningMessageDescription.parameters)}
+                                </div>
+                            }
+                        </div>
+                    </>
                 }
             </DataListCell>
         );
