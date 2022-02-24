@@ -50,7 +50,9 @@ public interface CredentialProvider<T extends CredentialModel> extends Provider 
 
     CredentialTypeMetadata getCredentialTypeMetadata(CredentialTypeMetadataContext metadataContext);
 
-    default CredentialMetadata getCredentialMetadata(T credentialModel, CredentialTypeMetadata credentialTypeMetadata) throws IOException {
-        return new CredentialMetadata();
+    default CredentialMetadata getCredentialMetadata(T credentialModel, CredentialTypeMetadata credentialTypeMetadata) {
+        CredentialMetadata credentialMetadata = new CredentialMetadata();
+        credentialMetadata.setCredentialModel(credentialModel);
+        return credentialMetadata;
     }
 }

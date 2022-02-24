@@ -66,15 +66,21 @@ public class RecoveryAuthnCodesCredentialProvider
     }
 
     @Override
-    public CredentialMetadata getCredentialMetadata(RecoveryAuthnCodesCredentialModel credentialModel, CredentialTypeMetadata credentialTypeMetadata) throws IOException {
+    public CredentialMetadata getCredentialMetadata(RecoveryAuthnCodesCredentialModel credentialModel, CredentialTypeMetadata credentialTypeMetadata) {
 
         CredentialMetadata credentialMetadata = new CredentialMetadata();
-        RecoveryAuthnCodesCredentialData credentialData = JsonSerialization.readValue(credentialModel.getCredentialData(), RecoveryAuthnCodesCredentialData.class);
-        if (credentialData.getRemainingCodes() < 4) {
-            credentialMetadata.setWarningMessageTitle(RECOVERY_CODES_NUMBER_REMAINING, String.valueOf(credentialData.getRemainingCodes()));
-            credentialMetadata.setWarningMessageDescription(RECOVERY_CODES_GENERATE_NEW_CODES);
+        RecoveryAuthnCodesCredentialData credentialData = null;
+        try {
+            credentialData = JsonSerialization.readValue(credentialModel.getCredentialData(), RecoveryAuthnCodesCredentialData.class);
+            if (credentialData.getRemainingCodes() < 4) {
+                credentialMetadata.setWarningMessageTitle(RECOVERY_CODES_NUMBER_REMAINING, String.valueOf(credentialData.getRemainingCodes()));
+                credentialMetadata.setWarningMessageDescription(RECOVERY_CODES_GENERATE_NEW_CODES);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         credentialMetadata.setInfoMessage(RECOVERY_CODES_NUMBER_USED,String.valueOf(credentialData.getTotalCodes() - credentialData.getRemainingCodes()));
+        credentialMetadata.setCredentialModel(credentialModel);
 
         return credentialMetadata;
     }

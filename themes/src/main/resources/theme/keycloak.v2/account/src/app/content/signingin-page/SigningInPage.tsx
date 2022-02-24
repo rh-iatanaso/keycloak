@@ -76,6 +76,7 @@ interface CredMetadata {
 	infoMessage?: LocalizedMessage;
 	warningMessageTitle?: LocalizedMessage;
 	warningMessageDescription?: LocalizedMessage;
+	credential: UserCredential;
 }
 
 interface UserCredential {
@@ -85,7 +86,6 @@ interface UserCredential {
     createdDate?: number;
     strCreatedDate?: string;
     credentialData?: string;
-    credentialMetadata?: string;
 }
 
 // A CredentialContainer is unique by combo of credential type and credential category
@@ -97,7 +97,7 @@ interface CredentialContainer {
     createAction?: string;
     updateAction?: string;
     removeable: boolean;
-    userCredentials: UserCredential[];
+    userCredentials: CredMetadata[];
     open: boolean;
 }
 
@@ -216,7 +216,7 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
 
     private renderUserCredentials(credTypeMap: CredTypeMap, credType: CredType, keycloak: KeycloakService): React.ReactNode {
         const credContainer: CredentialContainer = credTypeMap.get(credType)!;
-        const userCredentials: UserCredential[] = credContainer.userCredentials;
+        const userCredentials: CredMetadata[] = credContainer.userCredentials;
         const removeable: boolean = credContainer.removeable;
         const type: string = credContainer.type;
         const displayName: string = credContainer.displayName;
@@ -238,7 +238,8 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
             );
         }
 
-        userCredentials.forEach(credential => {
+        userCredentials.forEach(credentialMetadata => {
+            let credential = credentialMetadata.credential;
             if (!credential.userLabel) credential.userLabel = Msg.localize(credential.type);
             if (credential.hasOwnProperty('createdDate') && credential.createdDate && credential.createdDate! > 0) {
                 credential.strCreatedDate = TimeUtil.format(credential.createdDate as number);
@@ -252,12 +253,12 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
 
         return (
             <React.Fragment key='userCredentials'> {
-                userCredentials.map(credential => (
-                    <DataListItem id={`${SigningInPage.credElementId(type, credential.id, 'row')}`} key={'credential-list-item-' + credential.id} aria-labelledby={'credential-list-item-' + credential.userLabel}>
-                        <DataListItemRow key={'userCredentialRow-' + credential.id}>
-                            <DataListItemCells dataListCells={this.credentialRowCells(credential, type)}/>
+                userCredentials.map(credentialMetadata => (
+                    <DataListItem id={`${SigningInPage.credElementId(type, credentialMetadata.credential.id, 'row')}`} key={'credential-list-item-' + credentialMetadata.credential.id} aria-labelledby={'credential-list-item-' + credentialMetadata.credential.userLabel}>
+                        <DataListItemRow key={'userCredentialRow-' + credentialMetadata.credential.id}>
+                            <DataListItemCells dataListCells={this.credentialRowCells(credentialMetadata, type)}/>
                             <CredentialAction
-                                credential={credential}
+                                credential={credentialMetadata.credential}
                                 removeable={removeable}
                                 updateAction={updateAIA}
                                 credRemover={this.handleRemove}
@@ -269,10 +270,10 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
             </React.Fragment>)
     }
 
-    private credentialRowCells(credential: UserCredential, type: string): React.ReactNode[] {
+    private credentialRowCells(credMetadata: CredMetadata, type: string): React.ReactNode[] {
         const credRowCells: React.ReactNode[] = [];
+        const credential = credMetadata.credential;
         const credData: CredData = JSON.parse(credential.credentialData!);
-        const credMetadata: CredMetadata = credential.credentialMetadata ? JSON.parse(credential.credentialMetadata!) : {};
         credRowCells.push(
             <DataListCell id={`${SigningInPage.credElementId(type, credential.id, 'label')}`} key={'userLabel-' + credential.id}>
                 {credential.userLabel}

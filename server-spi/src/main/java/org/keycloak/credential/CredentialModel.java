@@ -67,7 +67,6 @@ public class CredentialModel implements Serializable {
 
     private String secretData;
     private String credentialData;
-    private String credentialMetadata;
 
     public CredentialModel shallowClone() {
         CredentialModel res = new CredentialModel();
@@ -120,14 +119,6 @@ public class CredentialModel implements Serializable {
     }
     public void setCredentialData(String credentialData) {
         this.credentialData = credentialData;
-    }
-
-    public String getCredentialMetadata() {
-        return credentialMetadata;
-    }
-
-    public void setCredentialMetadata(String credentialMetadata) {
-        this.credentialMetadata = credentialMetadata;
     }
 
     public static Comparator<CredentialModel> comparingByStartDateDesc() {
