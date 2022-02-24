@@ -605,17 +605,17 @@ public class ModelToRepresentation {
         try {
             rep.setInfoMessage(credentialMetadata.getInfoMessage() == null ? null : JsonSerialization.writeValueAsString(credentialMetadata.getInfoMessage()));
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.warn("unable to serialize model information, skipping info message", e);
         }
         try {
             rep.setWarningMessageDescription(credentialMetadata.getWarningMessageDescription() == null ? null : JsonSerialization.writeValueAsString(credentialMetadata.getWarningMessageDescription()));
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.warn("unable to serialize model information, skipping warning message desc", e);
         }
         try {
             rep.setWarningMessageTitle(credentialMetadata.getWarningMessageTitle() == null ? null : JsonSerialization.writeValueAsString(credentialMetadata.getWarningMessageTitle()));
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.warn("unable to serialize model information, skipping warning message title", e);
         }
         return rep;
     }
