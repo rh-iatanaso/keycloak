@@ -281,9 +281,9 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
             <DataListCell id={`${SigningInPage.credElementId(type, credential.id, 'label')}`} key={'userLabel-' + credential.id}>
                 {credential.userLabel}
                 {infoMessage &&
-					<div>{Msg.localize(infoMessage.key, infoMessage.parameters)}</div>
-				}
-				{warningMessageTitle &&
+                    <div>{Msg.localize(infoMessage.key, infoMessage.parameters)}</div>
+                }
+                {warningMessageTitle &&
                     <>
                         <br />
                         <div className="pf-c-alert pf-m-warning pf-m-inline" aria-label="Success alert">
