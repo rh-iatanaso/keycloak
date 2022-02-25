@@ -620,28 +620,6 @@ public class ModelToRepresentation {
         return rep;
     }
 
-    public static CredentialMetadataRepresentation toRepresentation(CredentialMetadata credentialMetadata) {
-        CredentialMetadataRepresentation rep = new CredentialMetadataRepresentation();
-
-        rep.setCredential(ModelToRepresentation.toRepresentation(credentialMetadata.getCredentialModel()));
-        try {
-            rep.setInfoMessage(credentialMetadata.getInfoMessage() == null ? null : JsonSerialization.writeValueAsString(credentialMetadata.getInfoMessage()));
-        } catch (IOException e) {
-            LOG.warn("unable to serialize model information, skipping info message", e);
-        }
-        try {
-            rep.setWarningMessageDescription(credentialMetadata.getWarningMessageDescription() == null ? null : JsonSerialization.writeValueAsString(credentialMetadata.getWarningMessageDescription()));
-        } catch (IOException e) {
-            LOG.warn("unable to serialize model information, skipping warning message desc", e);
-        }
-        try {
-            rep.setWarningMessageTitle(credentialMetadata.getWarningMessageTitle() == null ? null : JsonSerialization.writeValueAsString(credentialMetadata.getWarningMessageTitle()));
-        } catch (IOException e) {
-            LOG.warn("unable to serialize model information, skipping warning message title", e);
-        }
-        return rep;
-    }
-
     public static FederatedIdentityRepresentation toRepresentation(FederatedIdentityModel socialLink) {
         FederatedIdentityRepresentation rep = new FederatedIdentityRepresentation();
         rep.setUserName(socialLink.getUserName());
