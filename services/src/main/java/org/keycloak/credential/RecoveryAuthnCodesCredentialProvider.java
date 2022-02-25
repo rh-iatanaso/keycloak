@@ -77,7 +77,7 @@ public class RecoveryAuthnCodesCredentialProvider
                 credentialMetadata.setWarningMessageDescription(RECOVERY_CODES_GENERATE_NEW_CODES);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.warn("unable to deserialize model information, skipping warning message title and description", e);
         }
         credentialMetadata.setInfoMessage(RECOVERY_CODES_NUMBER_USED,String.valueOf(credentialData.getTotalCodes() - credentialData.getRemainingCodes()));
         credentialMetadata.setCredentialModel(credentialModel);
