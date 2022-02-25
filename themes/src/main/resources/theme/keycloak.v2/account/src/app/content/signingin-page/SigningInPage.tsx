@@ -67,11 +67,6 @@ interface CredData {
     totalCodes?: number;
 }
 
-interface LocalizedMessage {
-    key: string;
-    parameters: string[];
-}
-
 interface CredMetadata {
     infoMessage?: string;
     warningMessageTitle?: string;
