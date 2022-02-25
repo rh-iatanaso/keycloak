@@ -139,7 +139,7 @@ public class AccountCredentialResource {
             return removeable;
         }
 
-        public List<CredentialMetadataRepresentation> getUserCredentials() {
+        public List<CredentialMetadataRepresentation> getUserCredentialMetadatas() {
             return userCredentialMetadatas;
         }
 

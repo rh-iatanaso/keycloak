@@ -97,7 +97,7 @@ interface CredentialContainer {
     createAction?: string;
     updateAction?: string;
     removeable: boolean;
-    userCredentials: CredMetadata[];
+    userCredentialMetadatas: CredMetadata[];
     open: boolean;
 }
 
@@ -216,12 +216,12 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
 
     private renderUserCredentials(credTypeMap: CredTypeMap, credType: CredType, keycloak: KeycloakService): React.ReactNode {
         const credContainer: CredentialContainer = credTypeMap.get(credType)!;
-        const userCredentials: CredMetadata[] = credContainer.userCredentials;
+        const userCredentialMetadatas: CredMetadata[] = credContainer.userCredentialMetadatas;
         const removeable: boolean = credContainer.removeable;
         const type: string = credContainer.type;
         const displayName: string = credContainer.displayName;
 
-        if (!userCredentials || userCredentials.length === 0) {
+        if (!userCredentialMetadatas || userCredentialMetadatas.length === 0) {
             const localizedDisplayName = Msg.localize(displayName);
             return (
                 <DataListItem key='no-credentials-list-item' aria-labelledby='no-credentials-list-item'>
@@ -238,7 +238,7 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
             );
         }
 
-        userCredentials.forEach(credentialMetadata => {
+        userCredentialMetadatas.forEach(credentialMetadata => {
             let credential = credentialMetadata.credential;
             if (!credential.userLabel) credential.userLabel = Msg.localize(credential.type);
             if (credential.hasOwnProperty('createdDate') && credential.createdDate && credential.createdDate! > 0) {
@@ -252,8 +252,8 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
         }
 
         return (
-            <React.Fragment key='userCredentials'> {
-                userCredentials.map(credentialMetadata => (
+            <React.Fragment key='userCredentialMetadatas'> {
+                userCredentialMetadatas.map(credentialMetadata => (
                     <DataListItem id={`${SigningInPage.credElementId(type, credentialMetadata.credential.id, 'row')}`} key={'credential-list-item-' + credentialMetadata.credential.id} aria-labelledby={'credential-list-item-' + credentialMetadata.credential.userLabel}>
                         <DataListItemRow key={'userCredentialRow-' + credentialMetadata.credential.id}>
                             <DataListItemCells dataListCells={this.credentialRowCells(credentialMetadata, type)}/>
