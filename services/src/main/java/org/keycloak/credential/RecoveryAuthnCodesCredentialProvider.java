@@ -5,9 +5,14 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.RecoveryAuthnCodesCredentialModel;
+import org.keycloak.models.credential.dto.RecoveryAuthnCodesCredentialData;
 import org.keycloak.models.utils.RecoveryAuthnCodesUtils;
+import org.keycloak.util.JsonSerialization;
 
+import java.io.IOException;
 import java.util.Optional;
+
+import static org.keycloak.models.credential.RecoveryAuthnCodesCredentialModel.*;
 
 public class RecoveryAuthnCodesCredentialProvider
         implements CredentialProvider<RecoveryAuthnCodesCredentialModel>, CredentialInputValidator {
@@ -54,8 +59,30 @@ public class RecoveryAuthnCodesCredentialProvider
         UserModel user = metadataContext.getUser();
         if (user != null && !isConfiguredFor(session.getContext().getRealm(), user, getType())) {
             builder.createAction(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES.name());
+        } else {
+            builder.updateAction(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES.name());
         }
         return builder.build(session);
+    }
+
+    @Override
+    public CredentialMetadata getCredentialMetadata(RecoveryAuthnCodesCredentialModel credentialModel, CredentialTypeMetadata credentialTypeMetadata) {
+
+        CredentialMetadata credentialMetadata = new CredentialMetadata();
+        RecoveryAuthnCodesCredentialData credentialData = null;
+        try {
+            credentialData = JsonSerialization.readValue(credentialModel.getCredentialData(), RecoveryAuthnCodesCredentialData.class);
+            if (credentialData.getRemainingCodes() < 4) {
+                credentialMetadata.setWarningMessageTitle(RECOVERY_CODES_NUMBER_REMAINING, String.valueOf(credentialData.getRemainingCodes()));
+                credentialMetadata.setWarningMessageDescription(RECOVERY_CODES_GENERATE_NEW_CODES);
+            }
+        } catch (IOException e) {
+            logger.warn("unable to deserialize model information, skipping warning message title and description", e);
+        }
+        credentialMetadata.setInfoMessage(RECOVERY_CODES_NUMBER_USED,String.valueOf(credentialData.getTotalCodes() - credentialData.getRemainingCodes()));
+        credentialMetadata.setCredentialModel(credentialModel);
+
+        return credentialMetadata;
     }
 
     @Override

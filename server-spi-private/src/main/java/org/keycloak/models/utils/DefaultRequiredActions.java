@@ -61,6 +61,17 @@ public class DefaultRequiredActions {
             realm.addRequiredActionProvider(totp);
         }
 
+        if (realm.getRequiredActionProviderByAlias(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES.name()) == null) {
+            RequiredActionProviderModel recoveryCodes = new RequiredActionProviderModel();
+            recoveryCodes.setEnabled(true);
+            recoveryCodes.setAlias(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES.name());
+            recoveryCodes.setName("Recovery Authentication Codes");
+            recoveryCodes.setProviderId(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES.name());
+            recoveryCodes.setDefaultAction(false);
+            recoveryCodes.setPriority(70);
+            realm.addRequiredActionProvider(recoveryCodes);
+        }
+
         if (realm.getRequiredActionProviderByAlias(UserModel.RequiredAction.UPDATE_PASSWORD.name()) == null) {
             RequiredActionProviderModel updatePassword = new RequiredActionProviderModel();
             updatePassword.setEnabled(true);

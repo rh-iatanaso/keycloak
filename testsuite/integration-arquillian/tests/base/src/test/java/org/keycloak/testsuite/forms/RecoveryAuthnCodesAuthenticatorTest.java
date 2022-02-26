@@ -100,6 +100,7 @@ public class RecoveryAuthnCodesAuthenticatorTest extends AbstractTestRealmKeyclo
     public void testAuthenticateRecoveryAuthnCodes() {
         try {
             configureBrowserFlowWithRecoveryAuthnCodes(testingClient);
+            testRealm().flows().removeRequiredAction(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES.name());
             loginUsernameOnlyPage.open();
             loginUsernameOnlyPage.assertAttemptedUsernameAvailability(false);
             loginUsernameOnlyPage.login("test-user@localhost");

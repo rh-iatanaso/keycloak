@@ -67,6 +67,13 @@ interface CredData {
     totalCodes?: number;
 }
 
+interface CredMetadata {
+    infoMessage?: string;
+    warningMessageTitle?: string;
+    warningMessageDescription?: string;
+    credential: UserCredential;
+}
+
 interface UserCredential {
     id: string;
     type: string;
@@ -85,7 +92,7 @@ interface CredentialContainer {
     createAction?: string;
     updateAction?: string;
     removeable: boolean;
-    userCredentials: UserCredential[];
+    userCredentialMetadatas: CredMetadata[];
     open: boolean;
 }
 
@@ -204,12 +211,12 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
 
     private renderUserCredentials(credTypeMap: CredTypeMap, credType: CredType, keycloak: KeycloakService): React.ReactNode {
         const credContainer: CredentialContainer = credTypeMap.get(credType)!;
-        const userCredentials: UserCredential[] = credContainer.userCredentials;
+        const userCredentialMetadatas: CredMetadata[] = credContainer.userCredentialMetadatas;
         const removeable: boolean = credContainer.removeable;
         const type: string = credContainer.type;
         const displayName: string = credContainer.displayName;
 
-        if (!userCredentials || userCredentials.length === 0) {
+        if (!userCredentialMetadatas || userCredentialMetadatas.length === 0) {
             const localizedDisplayName = Msg.localize(displayName);
             return (
                 <DataListItem key='no-credentials-list-item' aria-labelledby='no-credentials-list-item'>
@@ -226,7 +233,8 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
             );
         }
 
-        userCredentials.forEach(credential => {
+        userCredentialMetadatas.forEach(credentialMetadata => {
+            let credential = credentialMetadata.credential;
             if (!credential.userLabel) credential.userLabel = Msg.localize(credential.type);
             if (credential.hasOwnProperty('createdDate') && credential.createdDate && credential.createdDate! > 0) {
                 credential.strCreatedDate = TimeUtil.format(credential.createdDate as number);
@@ -239,13 +247,13 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
         }
 
         return (
-            <React.Fragment key='userCredentials'> {
-                userCredentials.map(credential => (
-                    <DataListItem id={`${SigningInPage.credElementId(type, credential.id, 'row')}`} key={'credential-list-item-' + credential.id} aria-labelledby={'credential-list-item-' + credential.userLabel}>
-                        <DataListItemRow key={'userCredentialRow-' + credential.id}>
-                            <DataListItemCells dataListCells={this.credentialRowCells(credential, type)}/>
+            <React.Fragment key='userCredentialMetadatas'> {
+                userCredentialMetadatas.map(credentialMetadata => (
+                    <DataListItem id={`${SigningInPage.credElementId(type, credentialMetadata.credential.id, 'row')}`} key={'credential-list-item-' + credentialMetadata.credential.id} aria-labelledby={'credential-list-item-' + credentialMetadata.credential.userLabel}>
+                        <DataListItemRow key={'userCredentialRow-' + credentialMetadata.credential.id}>
+                            <DataListItemCells dataListCells={this.credentialRowCells(credentialMetadata, type)}/>
                             <CredentialAction
-                                credential={credential}
+                                credential={credentialMetadata.credential}
                                 removeable={removeable}
                                 updateAction={updateAIA}
                                 credRemover={this.handleRemove}
@@ -257,16 +265,20 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
             </React.Fragment>)
     }
 
-    private credentialRowCells(credential: UserCredential, type: string): React.ReactNode[] {
+    private credentialRowCells(credMetadata: CredMetadata, type: string): React.ReactNode[] {
         const credRowCells: React.ReactNode[] = [];
+        const credential = credMetadata.credential;
         const credData: CredData = JSON.parse(credential.credentialData!);
+        const infoMessage = credMetadata.infoMessage ? JSON.parse(credMetadata.infoMessage) : null;
+        const warningMessageTitle = credMetadata.warningMessageTitle ? JSON.parse(credMetadata.warningMessageTitle) : null;
+        const warningMessageDescription = credMetadata.warningMessageDescription ? JSON.parse(credMetadata.warningMessageDescription) : null;
         credRowCells.push(
             <DataListCell id={`${SigningInPage.credElementId(type, credential.id, 'label')}`} key={'userLabel-' + credential.id}>
                 {credential.userLabel}
-                {credData.remainingCodes && credData.totalCodes &&
-                    <div>{credData.totalCodes - credData.remainingCodes}/{credData.totalCodes} recovery codes used</div>
+                {infoMessage &&
+                    <div>{Msg.localize(infoMessage.key, infoMessage.parameters)}</div>
                 }
-                {credData.remainingCodes && credData.remainingCodes < 4 &&
+                {warningMessageTitle &&
                     <>
                         <br />
                         <div className="pf-c-alert pf-m-warning pf-m-inline" aria-label="Success alert">
@@ -275,11 +287,13 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
                             </div>
                             <h4 className="pf-c-alert__title">
                                 <span className="pf-screen-reader">Warning alert:</span>
-                                {credData.remainingCodes} recovery codes remaining
+                                {Msg.localize(warningMessageTitle.key, warningMessageTitle.parameters)}
                             </h4>
-                            <div className="pf-c-alert__description">
-                                Generate new codes to ensure access to your account
-                            </div>
+                            {credMetadata.warningMessageDescription &&
+                                <div className="pf-c-alert__description">
+                                    {Msg.localize(warningMessageDescription.key, warningMessageDescription.parameters)}
+                                </div>
+                            }
                         </div>
                     </>
                 }
