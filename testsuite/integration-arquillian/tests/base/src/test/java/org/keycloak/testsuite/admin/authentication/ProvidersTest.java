@@ -226,6 +226,13 @@ public class ProvidersTest extends AbstractAuthenticationTest {
                 "Flow is executed only if the configured LOA or a higher one has been requested but not yet satisfied. After the flow is successfully finished, the LOA in the session will be updated to value prescribed by this condition.");
         addProviderInfo(result, "auth-recovery-authn-code-form","Recovery Authentication Code Form",
                 "Validates a Recovery Authentication Code");
+        
+        addProviderInfo(result, "user-session-limits", "User session count limiter",
+                "Configures how many concurrent sessions a single user is allowed to create for this realm and/or client");
+
+        addProviderInfo(result, "custom-callback-authenticator", "Custom callback Factory",
+                "Used for testing purposes of Callback factory");
+
         return result;
     }
 
