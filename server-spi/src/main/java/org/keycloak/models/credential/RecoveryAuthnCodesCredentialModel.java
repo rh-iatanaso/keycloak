@@ -1,5 +1,6 @@
 package org.keycloak.models.credential;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -31,8 +32,11 @@ public class RecoveryAuthnCodesCredentialModel extends CredentialModel {
         this.secretData = secretData;
     }
 
-    public RecoveryAuthnCodeRepresentation getNextRecoveryAuthnCode() {
-        return this.secretData.getCodes().get(0);
+    public Optional<RecoveryAuthnCodeRepresentation> getNextRecoveryAuthnCode() {
+        if (allCodesUsed()) {
+            return Optional.empty();
+        }
+        return Optional.of(this.secretData.getCodes().get(0));
     }
 
     public boolean allCodesUsed() {
