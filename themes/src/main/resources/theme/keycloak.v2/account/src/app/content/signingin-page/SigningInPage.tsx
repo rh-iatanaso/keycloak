@@ -274,7 +274,6 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
         const warningMessageDescription = credMetadata.warningMessageDescription ? JSON.parse(credMetadata.warningMessageDescription) : null;
         credRowCells.push(
             <DataListCell id={`${SigningInPage.credElementId(type, credential.id, 'label')}`} key={'userLabel-' + credential.id}>
-                {credential.userLabel}
                 {infoMessage &&
                     <div>{Msg.localize(infoMessage.key, infoMessage.parameters)}</div>
                 }
