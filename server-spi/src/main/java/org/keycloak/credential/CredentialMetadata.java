@@ -27,29 +27,28 @@ public class CredentialMetadata {
     }
 
     public void setWarningMessageTitle(String key, String... parameters) {
-        LocalizedMessage message = new LocalizedMessage();
-        message.key = key;
-        message.parameters = parameters;
+        LocalizedMessage message = new LocalizedMessage(key, parameters);
         this.warningMessageTitle = message;
     }
 
     public void setWarningMessageDescription(String key, String... parameters) {
-        LocalizedMessage message = new LocalizedMessage();
-        message.key = key;
-        message.parameters = parameters;
+        LocalizedMessage message = new LocalizedMessage(key, parameters);
         this.warningMessageDescription = message;
     }
 
     public void setInfoMessage(String key, String... parameters) {
-        LocalizedMessage message = new LocalizedMessage();
-        message.key = key;
-        message.parameters = parameters;
+        LocalizedMessage message = new LocalizedMessage(key, parameters);
         this.infoMessage = message;
     }
 
-    class LocalizedMessage {
-        String key;
-        Object[] parameters; // Parameters of localized message. Something similar to class `FormMessage` from `keycloak-services` module
+    public static class LocalizedMessage {
+        private final String key;
+        private final Object[] parameters;
+
+        public LocalizedMessage(String key, Object[] parameters) {
+            this.key = key;
+            this.parameters = parameters;
+        }
 
         public String getKey() {
             return key;

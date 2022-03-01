@@ -10,6 +10,7 @@ import org.keycloak.models.utils.RecoveryAuthnCodesUtils;
 import org.keycloak.util.JsonSerialization;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.keycloak.models.credential.RecoveryAuthnCodesCredentialModel.*;
@@ -91,8 +92,7 @@ public class RecoveryAuthnCodesCredentialProvider
 
     @Override
     public boolean isConfiguredFor(RealmModel realm, UserModel user, String credentialType) {
-        return session.userCredentialManager().getStoredCredentialsByTypeStream(realm, user, credentialType).findAny()
-                .isPresent();
+        return session.userCredentialManager().getStoredCredentialsByTypeStream(realm, user, credentialType).anyMatch(Objects::nonNull);
     }
 
     @Override

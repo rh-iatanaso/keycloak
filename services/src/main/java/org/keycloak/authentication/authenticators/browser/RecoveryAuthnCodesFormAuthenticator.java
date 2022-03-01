@@ -49,48 +49,40 @@ public class RecoveryAuthnCodesFormAuthenticator implements Authenticator {
 
     private boolean isRecoveryAuthnCodeInputValid(AuthenticationFlowContext authnFlowContext) {
         boolean result = false;
-        MultivaluedMap<String, String> formParamsMap;
-        String recoveryAuthnCodeUserInput;
-        RealmModel targetRealm;
-        UserModel authenticatedUser;
-        Response responseChallenge;
-        boolean isValid;
-        Optional<CredentialModel> optUserCredentialFound;
-        RecoveryAuthnCodesCredentialModel recoveryCodeCredentialModel = null;
-
-        formParamsMap = authnFlowContext.getHttpRequest().getDecodedFormParameters();
-        recoveryAuthnCodeUserInput = formParamsMap.getFirst(RecoveryAuthnCodesUtils.FIELD_RECOVERY_CODE_IN_BROWSER_FLOW);
+        MultivaluedMap<String, String> formParamsMap = authnFlowContext.getHttpRequest().getDecodedFormParameters();
+        String recoveryAuthnCodeUserInput = formParamsMap.getFirst(RecoveryAuthnCodesUtils.FIELD_RECOVERY_CODE_IN_BROWSER_FLOW);
 
         if (ObjectUtil.isBlank(recoveryAuthnCodeUserInput)) {
             authnFlowContext.forceChallenge(createLoginForm(authnFlowContext, true,
                     RecoveryAuthnCodesUtils.RECOVERY_AUTHN_CODES_INPUT_DEFAULT_ERROR_MESSAGE,
                     RecoveryAuthnCodesUtils.FIELD_RECOVERY_CODE_IN_BROWSER_FLOW));
-        } else {
-            targetRealm = authnFlowContext.getRealm();
-            authenticatedUser = authnFlowContext.getUser();
-            if (!isDisabledByBruteForce(authnFlowContext, authenticatedUser)) {
-                isValid = this.userCredentialManager.isValid(targetRealm, authenticatedUser,
-                        UserCredentialModel.buildFromBackupAuthnCode(recoveryAuthnCodeUserInput.replace("-", "")));
-                if (!isValid) {
-                    responseChallenge = createLoginForm(authnFlowContext, true,
-                            RecoveryAuthnCodesUtils.RECOVERY_AUTHN_CODES_INPUT_DEFAULT_ERROR_MESSAGE,
-                            RecoveryAuthnCodesUtils.FIELD_RECOVERY_CODE_IN_BROWSER_FLOW);
-                    authnFlowContext.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, responseChallenge);
-                } else {
-                    result = true;
-                    optUserCredentialFound = this.userCredentialManager.getStoredCredentialsByTypeStream(targetRealm,
-                            authenticatedUser, RecoveryAuthnCodesCredentialModel.TYPE).findFirst();
-                    if (optUserCredentialFound.isPresent()) {
-                        recoveryCodeCredentialModel = RecoveryAuthnCodesCredentialModel
-                                .createFromCredentialModel(optUserCredentialFound.get());
-                        if (recoveryCodeCredentialModel.allCodesUsed()) {
-                            this.userCredentialManager.removeStoredCredential(targetRealm, authenticatedUser,
-                                    recoveryCodeCredentialModel.getId());
-                        }
+            return result;
+        }
+        RealmModel targetRealm = authnFlowContext.getRealm();
+        UserModel authenticatedUser = authnFlowContext.getUser();
+        if (!isDisabledByBruteForce(authnFlowContext, authenticatedUser)) {
+            boolean isValid = this.userCredentialManager.isValid(targetRealm, authenticatedUser,
+                    UserCredentialModel.buildFromBackupAuthnCode(recoveryAuthnCodeUserInput.replace("-", "")));
+            if (!isValid) {
+                Response responseChallenge = createLoginForm(authnFlowContext, true,
+                        RecoveryAuthnCodesUtils.RECOVERY_AUTHN_CODES_INPUT_DEFAULT_ERROR_MESSAGE,
+                        RecoveryAuthnCodesUtils.FIELD_RECOVERY_CODE_IN_BROWSER_FLOW);
+                authnFlowContext.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, responseChallenge);
+            } else {
+                result = true;
+                Optional<CredentialModel> optUserCredentialFound = this.userCredentialManager.getStoredCredentialsByTypeStream(targetRealm,
+                        authenticatedUser, RecoveryAuthnCodesCredentialModel.TYPE).findFirst();
+                RecoveryAuthnCodesCredentialModel recoveryCodeCredentialModel = null;
+                if (optUserCredentialFound.isPresent()) {
+                    recoveryCodeCredentialModel = RecoveryAuthnCodesCredentialModel
+                            .createFromCredentialModel(optUserCredentialFound.get());
+                    if (recoveryCodeCredentialModel.allCodesUsed()) {
+                        this.userCredentialManager.removeStoredCredential(targetRealm, authenticatedUser,
+                                recoveryCodeCredentialModel.getId());
                     }
-                    if (recoveryCodeCredentialModel == null || recoveryCodeCredentialModel.allCodesUsed()) {
-                        authenticatedUser.addRequiredAction(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES);
-                    }
+                }
+                if (recoveryCodeCredentialModel == null || recoveryCodeCredentialModel.allCodesUsed()) {
+                    authenticatedUser.addRequiredAction(UserModel.RequiredAction.CONFIGURE_RECOVERY_AUTHN_CODES);
                 }
             }
         }
@@ -98,19 +90,21 @@ public class RecoveryAuthnCodesFormAuthenticator implements Authenticator {
     }
 
     protected boolean isDisabledByBruteForce(AuthenticationFlowContext authnFlowContext, UserModel authenticatedUser) {
-        boolean bolResult = false;
         String bruteForceError;
         Response challengeResponse;
-        bruteForceError = AuthenticatorUtils.getDisabledByBruteForceEventError(authnFlowContext.getProtector(),
-                authnFlowContext.getSession(), authnFlowContext.getRealm(), authenticatedUser);
-        if (bruteForceError != null) {
-            authnFlowContext.getEvent().user(authenticatedUser);
-            authnFlowContext.getEvent().error(bruteForceError);
-            challengeResponse = createLoginForm(authnFlowContext, false, Messages.INVALID_USER, FIELD_USERNAME);
-            authnFlowContext.forceChallenge(challengeResponse);
-            bolResult = true;
+        bruteForceError = getDisabledByBruteForceEventError(authnFlowContext, authenticatedUser);
+        if (bruteForceError == null) {
+            return false;
         }
-        return bolResult;
+        authnFlowContext.getEvent().user(authenticatedUser);
+        authnFlowContext.getEvent().error(bruteForceError);
+        challengeResponse = createLoginForm(authnFlowContext, false, Messages.INVALID_USER, FIELD_USERNAME);
+        authnFlowContext.forceChallenge(challengeResponse);
+        return true;
+    }
+
+    protected String getDisabledByBruteForceEventError(AuthenticationFlowContext authnFlowContext, UserModel authenticatedUser) {
+        return AuthenticatorUtils.getDisabledByBruteForceEventError(authnFlowContext, authenticatedUser);
     }
 
     private Response createLoginForm(AuthenticationFlowContext authnFlowContext, boolean withInvalidUserCredentialsError,

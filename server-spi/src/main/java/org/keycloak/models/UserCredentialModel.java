@@ -128,7 +128,7 @@ public class UserCredentialModel implements CredentialInput {
     }
 
     public static UserCredentialModel buildFromBackupAuthnCode(String backupAuthnCodeInput) {
-        return new UserCredentialModel("", RecoveryAuthnCodesCredentialModel.TYPE, backupAuthnCodeInput);
+        return buildFromBackupAuthnCode("", backupAuthnCodeInput);
     }
 
     public static UserCredentialModel buildFromBackupAuthnCode(String credentialId, String backupAuthnCodeInput) {

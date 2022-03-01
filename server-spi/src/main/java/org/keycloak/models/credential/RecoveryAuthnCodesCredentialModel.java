@@ -24,7 +24,6 @@ public class RecoveryAuthnCodesCredentialModel extends CredentialModel {
 
     private final RecoveryAuthnCodesCredentialData credentialData;
     private final RecoveryAuthnCodesSecretData secretData;
-    private final CredentialMetadata credentialMetadata = null;
 
     private RecoveryAuthnCodesCredentialModel(RecoveryAuthnCodesCredentialData credentialData,
             RecoveryAuthnCodesSecretData secretData) {
