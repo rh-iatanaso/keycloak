@@ -78,7 +78,10 @@ public class RecoveryAuthnCodesCredentialProvider
                 credentialMetadata.setWarningMessageTitle(RECOVERY_CODES_NUMBER_REMAINING, String.valueOf(credentialData.getRemainingCodes()));
                 credentialMetadata.setWarningMessageDescription(RECOVERY_CODES_GENERATE_NEW_CODES);
             }
-            credentialMetadata.setInfoMessage(RECOVERY_CODES_NUMBER_USED,String.valueOf(credentialData.getTotalCodes() - credentialData.getRemainingCodes()));
+
+            int codesUsed = credentialData.getTotalCodes() - credentialData.getRemainingCodes();
+            String codesUsedMessage = codesUsed + "/" + credentialData.getTotalCodes();
+            credentialMetadata.setInfoMessage(RECOVERY_CODES_NUMBER_USED, codesUsedMessage);
         } catch (IOException e) {
             logger.warn("unable to deserialize model information, skipping messages", e);
         }
