@@ -48,14 +48,6 @@ public class PasswordPolicy implements Serializable {
 
     public static final String RECOVERY_CODES_WARNING_THRESHOLD_ID = "recoveryCodesWarningThreshold";
 
-    public static final int RECOVERY_CODES_GENERATION_QUANTITY_DEFAULT = 12;
-
-    public static final String RECOVERY_CODES_GENERATION_QUANTITY_ID = "recoveryCodesGenerationQuantity";
-
-    public static final String RECOVERY_CODES_HASH_ALGORITHM_DEFAULT = Algorithm.RS512;
-
-    public static final String RECOVERY_CODES_HASH_ALGORITHM_ID = "recoveryCodesHashAlgorithm";
-
     private Map<String, Object> policyConfig;
     private Builder builder;
 

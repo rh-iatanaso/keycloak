@@ -55,7 +55,7 @@ public class RecoveryAuthnCodesCredentialModel extends CredentialModel {
         }
     }
 
-    public static RecoveryAuthnCodesCredentialModel createFromValues(PasswordPolicy passwordPolicy, List<String> originalGeneratedCodes, long generatedAt,
+    public static RecoveryAuthnCodesCredentialModel createFromValues(List<String> originalGeneratedCodes, long generatedAt,
                                                                      String userLabel) {
         RecoveryAuthnCodesSecretData secretData;
         RecoveryAuthnCodesCredentialData credentialData;

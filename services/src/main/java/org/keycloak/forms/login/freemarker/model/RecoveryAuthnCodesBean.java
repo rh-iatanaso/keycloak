@@ -12,7 +12,7 @@ public class RecoveryAuthnCodesBean {
     private final List<String> generatedRecoveryAuthnCodesList;
     private final long generatedAt;
 
-    public RecoveryAuthnCodesBean(PasswordPolicy passwordPolicy) {
+    public RecoveryAuthnCodesBean() {
         this.generatedRecoveryAuthnCodesList = RecoveryAuthnCodesUtils.generateRawCodes();
         this.generatedAt = Time.currentTimeMillis();
     }

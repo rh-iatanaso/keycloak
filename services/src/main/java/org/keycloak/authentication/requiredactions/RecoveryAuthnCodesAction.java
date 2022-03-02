@@ -90,7 +90,7 @@ public class RecoveryAuthnCodesAction implements RequiredActionProvider, Require
         generatedAtTime = Long.parseLong(httpReqParamsMap.getFirst(FIELD_GENERATED_AT_HIDDEN));
         generatedUserLabel = httpReqParamsMap.getFirst(FIELD_USER_LABEL_HIDDEN);
 
-        RecoveryAuthnCodesCredentialModel credentialModel = createFromValues(reqActionContext.getRealm().getPasswordPolicy(), generatedCodes, generatedAtTime, generatedUserLabel);
+        RecoveryAuthnCodesCredentialModel credentialModel = createFromValues(generatedCodes, generatedAtTime, generatedUserLabel);
 
         recoveryCodeCredentialProvider.createCredential(reqActionContext.getRealm(), reqActionContext.getUser(),
                 credentialModel);
@@ -98,8 +98,8 @@ public class RecoveryAuthnCodesAction implements RequiredActionProvider, Require
         reqActionContext.success();
     }
 
-    protected RecoveryAuthnCodesCredentialModel createFromValues(PasswordPolicy passwordPolicy, List<String> generatedCodes, Long generatedAtTime, String generatedUserLabel) {
-        return RecoveryAuthnCodesCredentialModel.createFromValues(passwordPolicy, generatedCodes,
+    protected RecoveryAuthnCodesCredentialModel createFromValues(List<String> generatedCodes, Long generatedAtTime, String generatedUserLabel) {
+        return RecoveryAuthnCodesCredentialModel.createFromValues(generatedCodes,
                 generatedAtTime, generatedUserLabel);
     }
 
