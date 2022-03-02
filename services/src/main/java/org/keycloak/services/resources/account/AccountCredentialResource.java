@@ -173,7 +173,6 @@ public class AccountCredentialResource {
         Set<String> enabledCredentialTypes = getEnabledCredentialTypes(credentialProviders);
 
         Stream<CredentialModel> modelsStream = includeUserCredentials ? session.userCredentialManager().getStoredCredentialsStream(realm, user) : Stream.empty();
-        // Don't return secrets from REST endpoint
         List<CredentialModel> models = modelsStream.collect(Collectors.toList());
 
         Function<CredentialProvider, CredentialContainer> toCredentialContainer = (credentialProvider) -> {
