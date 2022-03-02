@@ -225,7 +225,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
                 attributes.put("totp", new TotpBean(session, realm, user, uriInfo.getRequestUriBuilder()));
                 break;
             case LOGIN_RECOVERY_AUTHN_CODES_CONFIG:
-                attributes.put("recoveryAuthnCodesConfigBean", new RecoveryAuthnCodesBean());
+                attributes.put("recoveryAuthnCodesConfigBean", new RecoveryAuthnCodesBean(session.getContext().getRealm().getPasswordPolicy()));
                 break;
             case LOGIN_RECOVERY_AUTHN_CODES_INPUT:
                 attributes.put("recoveryAuthnCodesInputBean", new RecoveryAuthnCodeInputLoginBean(session, realm, user));

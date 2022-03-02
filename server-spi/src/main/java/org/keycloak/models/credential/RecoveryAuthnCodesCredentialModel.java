@@ -6,6 +6,7 @@ import java.util.stream.IntStream;
 
 import org.keycloak.credential.CredentialMetadata;
 import org.keycloak.credential.CredentialModel;
+import org.keycloak.models.PasswordPolicy;
 import org.keycloak.models.credential.dto.RecoveryAuthnCodeRepresentation;
 import org.keycloak.models.credential.dto.RecoveryAuthnCodesCredentialData;
 import org.keycloak.models.credential.dto.RecoveryAuthnCodesSecretData;
@@ -54,8 +55,8 @@ public class RecoveryAuthnCodesCredentialModel extends CredentialModel {
         }
     }
 
-    public static RecoveryAuthnCodesCredentialModel createFromValues(List<String> originalGeneratedCodes, long generatedAt,
-            String userLabel) {
+    public static RecoveryAuthnCodesCredentialModel createFromValues(PasswordPolicy passwordPolicy, List<String> originalGeneratedCodes, long generatedAt,
+                                                                     String userLabel) {
         RecoveryAuthnCodesSecretData secretData;
         RecoveryAuthnCodesCredentialData credentialData;
         RecoveryAuthnCodesCredentialModel model;
@@ -90,9 +91,7 @@ public class RecoveryAuthnCodesCredentialModel extends CredentialModel {
         try {
             credentialData = JsonSerialization.readValue(credentialModel.getCredentialData(),
                     RecoveryAuthnCodesCredentialData.class);
-            if (credentialModel.getSecretData() != null) {
-                secretData = JsonSerialization.readValue(credentialModel.getSecretData(), RecoveryAuthnCodesSecretData.class);
-            }
+            secretData = JsonSerialization.readValue(credentialModel.getSecretData(), RecoveryAuthnCodesSecretData.class);
             newModel = new RecoveryAuthnCodesCredentialModel(credentialData, secretData);
             newModel.setUserLabel(credentialModel.getUserLabel());
             newModel.setCreatedDate(credentialModel.getCreatedDate());

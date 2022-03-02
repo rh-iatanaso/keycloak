@@ -1,4 +1,6 @@
-package org.keycloak.representations.idm;
+package org.keycloak.representations.account;
+
+import org.keycloak.representations.idm.CredentialRepresentation;
 
 public class CredentialMetadataRepresentation {
 

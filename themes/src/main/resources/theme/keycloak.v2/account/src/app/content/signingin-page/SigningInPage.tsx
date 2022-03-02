@@ -60,13 +60,6 @@ type CredType = string;
 type CredTypeMap = Map<CredType, CredentialContainer>;
 type CredContainerMap = Map<CredCategory, CredTypeMap>;
 
-interface CredData {
-    algorithm?: string;
-    hashIterations?: number;
-    remainingCodes?: number;
-    totalCodes?: number;
-}
-
 interface CredMetadata {
     infoMessage?: string;
     warningMessageTitle?: string;
@@ -268,7 +261,6 @@ class SigningInPage extends React.Component<SigningInPageProps, SigningInPageSta
     private credentialRowCells(credMetadata: CredMetadata, type: string): React.ReactNode[] {
         const credRowCells: React.ReactNode[] = [];
         const credential = credMetadata.credential;
-        const credData: CredData = JSON.parse(credential.credentialData!);
         const infoMessage = credMetadata.infoMessage ? JSON.parse(credMetadata.infoMessage) : null;
         const warningMessageTitle = credMetadata.warningMessageTitle ? JSON.parse(credMetadata.warningMessageTitle) : null;
         const warningMessageDescription = credMetadata.warningMessageDescription ? JSON.parse(credMetadata.warningMessageDescription) : null;

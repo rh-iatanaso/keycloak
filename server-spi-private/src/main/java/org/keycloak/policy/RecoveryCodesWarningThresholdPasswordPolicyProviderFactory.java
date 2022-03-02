@@ -28,7 +28,7 @@ import org.keycloak.models.UserModel;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-public class RecoveryCodesPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory, PasswordPolicyProvider {
+public class RecoveryCodesWarningThresholdPasswordPolicyProviderFactory implements PasswordPolicyProviderFactory, PasswordPolicyProvider {
 
     private KeycloakSession session;
 

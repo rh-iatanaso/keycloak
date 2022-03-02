@@ -1,6 +1,8 @@
 package org.keycloak.forms.login.freemarker.model;
 
 import org.keycloak.common.util.Time;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.PasswordPolicy;
 import org.keycloak.models.utils.RecoveryAuthnCodesUtils;
 
 import java.util.List;
@@ -10,7 +12,7 @@ public class RecoveryAuthnCodesBean {
     private final List<String> generatedRecoveryAuthnCodesList;
     private final long generatedAt;
 
-    public RecoveryAuthnCodesBean() {
+    public RecoveryAuthnCodesBean(PasswordPolicy passwordPolicy) {
         this.generatedRecoveryAuthnCodesList = RecoveryAuthnCodesUtils.generateRawCodes();
         this.generatedAt = Time.currentTimeMillis();
     }

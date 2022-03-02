@@ -13,6 +13,7 @@ import org.keycloak.credential.CredentialProvider;
 import org.keycloak.events.Details;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.models.PasswordPolicy;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.RecoveryAuthnCodesCredentialModel;
 import org.keycloak.models.utils.RecoveryAuthnCodesUtils;
@@ -89,7 +90,7 @@ public class RecoveryAuthnCodesAction implements RequiredActionProvider, Require
         generatedAtTime = Long.parseLong(httpReqParamsMap.getFirst(FIELD_GENERATED_AT_HIDDEN));
         generatedUserLabel = httpReqParamsMap.getFirst(FIELD_USER_LABEL_HIDDEN);
 
-        RecoveryAuthnCodesCredentialModel credentialModel = createFromValues(generatedCodes, generatedAtTime, generatedUserLabel);
+        RecoveryAuthnCodesCredentialModel credentialModel = createFromValues(reqActionContext.getRealm().getPasswordPolicy(), generatedCodes, generatedAtTime, generatedUserLabel);
 
         recoveryCodeCredentialProvider.createCredential(reqActionContext.getRealm(), reqActionContext.getUser(),
                 credentialModel);
@@ -97,8 +98,8 @@ public class RecoveryAuthnCodesAction implements RequiredActionProvider, Require
         reqActionContext.success();
     }
 
-    protected RecoveryAuthnCodesCredentialModel createFromValues(List<String> generatedCodes, Long generatedAtTime, String generatedUserLabel) {
-        return RecoveryAuthnCodesCredentialModel.createFromValues(generatedCodes,
+    protected RecoveryAuthnCodesCredentialModel createFromValues(PasswordPolicy passwordPolicy, List<String> generatedCodes, Long generatedAtTime, String generatedUserLabel) {
+        return RecoveryAuthnCodesCredentialModel.createFromValues(passwordPolicy, generatedCodes,
                 generatedAtTime, generatedUserLabel);
     }
 

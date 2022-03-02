@@ -6,6 +6,8 @@ import org.keycloak.common.util.SecretGenerator;
 import org.keycloak.crypto.Algorithm;
 import org.keycloak.crypto.JavaAlgorithm;
 import org.keycloak.jose.jws.crypto.HashUtils;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.PasswordPolicy;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;

@@ -114,6 +114,7 @@ public class RecoveryAuthnCodesAuthenticatorTest extends AbstractTestRealmKeyclo
                 RealmModel realm = session.realms().getRealmByName("test");
                 UserModel user = session.users().getUserByUsername(realm, "test-user@localhost");
                 CredentialModel recoveryAuthnCodesCred = RecoveryAuthnCodesCredentialModel.createFromValues(
+                        session.getContext().getRealm().getPasswordPolicy(),
                         generatedRecoveryAuthnCodes,
                         System.currentTimeMillis(),
                         null);
@@ -188,6 +189,7 @@ public class RecoveryAuthnCodesAuthenticatorTest extends AbstractTestRealmKeyclo
                 RealmModel realm = session.realms().getRealmByName("test");
                 UserModel user = session.users().getUserByUsername(realm, "test-user@localhost");
                 CredentialModel recoveryAuthnCodesCred = RecoveryAuthnCodesCredentialModel.createFromValues(
+                        session.getContext().getRealm().getPasswordPolicy(),
                         generatedRecoveryAuthnCodes,
                         System.currentTimeMillis(),
                         null);
