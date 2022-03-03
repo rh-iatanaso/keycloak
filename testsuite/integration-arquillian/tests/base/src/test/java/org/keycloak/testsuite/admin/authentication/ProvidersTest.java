@@ -229,6 +229,7 @@ public class ProvidersTest extends AbstractAuthenticationTest {
 
         addProviderInfo(result, "custom-callback-authenticator", "Custom callback Factory",
                 "Used for testing purposes of Callback factory");
+
         return result;
     }
 
