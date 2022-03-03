@@ -8,19 +8,22 @@ import org.keycloak.authentication.InitiatedActionSupport;
 import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.authentication.RequiredActionFactory;
 import org.keycloak.authentication.RequiredActionProvider;
+import org.keycloak.common.Profile;
 import org.keycloak.credential.RecoveryAuthnCodesCredentialProviderFactory;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.events.Details;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.models.PasswordPolicy;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.RecoveryAuthnCodesCredentialModel;
 import org.keycloak.models.utils.RecoveryAuthnCodesUtils;
+import org.keycloak.provider.EnvironmentDependentProviderFactory;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-public class RecoveryAuthnCodesAction implements RequiredActionProvider, RequiredActionFactory {
+public class RecoveryAuthnCodesAction implements RequiredActionProvider, RequiredActionFactory, EnvironmentDependentProviderFactory {
 
     private static final String FIELD_GENERATED_RECOVERY_AUTHN_CODES_HIDDEN = "generatedRecoveryAuthnCodes";
     private static final String FIELD_GENERATED_AT_HIDDEN = "generatedAt";
@@ -89,8 +92,7 @@ public class RecoveryAuthnCodesAction implements RequiredActionProvider, Require
         generatedAtTime = Long.parseLong(httpReqParamsMap.getFirst(FIELD_GENERATED_AT_HIDDEN));
         generatedUserLabel = httpReqParamsMap.getFirst(FIELD_USER_LABEL_HIDDEN);
 
-        RecoveryAuthnCodesCredentialModel credentialModel = RecoveryAuthnCodesCredentialModel.createFromValues(generatedCodes,
-                generatedAtTime, generatedUserLabel);
+        RecoveryAuthnCodesCredentialModel credentialModel = createFromValues(generatedCodes, generatedAtTime, generatedUserLabel);
 
         recoveryCodeCredentialProvider.createCredential(reqActionContext.getRealm(), reqActionContext.getUser(),
                 credentialModel);
@@ -98,8 +100,17 @@ public class RecoveryAuthnCodesAction implements RequiredActionProvider, Require
         reqActionContext.success();
     }
 
+    protected RecoveryAuthnCodesCredentialModel createFromValues(List<String> generatedCodes, Long generatedAtTime, String generatedUserLabel) {
+        return RecoveryAuthnCodesCredentialModel.createFromValues(generatedCodes,
+                generatedAtTime, generatedUserLabel);
+    }
+
     @Override
     public void close() {
     }
 
+    @Override
+    public boolean isSupported() {
+        return Profile.isFeatureEnabled(Profile.Feature.RECOVERY_CODES);
+    }
 }

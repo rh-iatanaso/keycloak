@@ -4,15 +4,17 @@ import org.keycloak.Config;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.authentication.ConfigurableAuthenticatorFactory;
+import org.keycloak.common.Profile;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.credential.RecoveryAuthnCodesCredentialModel;
+import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.provider.ProviderConfigProperty;
 
 import java.util.List;
 
-public class RecoveryAuthnCodesFormAuthenticatorFactory implements AuthenticatorFactory {
+public class RecoveryAuthnCodesFormAuthenticatorFactory implements AuthenticatorFactory, EnvironmentDependentProviderFactory {
 
     public static final String PROVIDER_ID = "auth-recovery-authn-code-form";
 
@@ -73,4 +75,8 @@ public class RecoveryAuthnCodesFormAuthenticatorFactory implements Authenticator
     public void close() {
     }
 
+    @Override
+    public boolean isSupported() {
+        return Profile.isFeatureEnabled(Profile.Feature.RECOVERY_CODES);
+    }
 }

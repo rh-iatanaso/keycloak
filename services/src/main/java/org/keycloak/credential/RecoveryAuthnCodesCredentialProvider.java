@@ -1,15 +1,20 @@
 package org.keycloak.credential;
 
 import org.jboss.logging.Logger;
+import org.keycloak.Config;
+import org.keycloak.common.Profile;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.PasswordPolicy;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.RecoveryAuthnCodesCredentialModel;
+import org.keycloak.models.credential.dto.RecoveryAuthnCodeRepresentation;
 import org.keycloak.models.credential.dto.RecoveryAuthnCodesCredentialData;
 import org.keycloak.models.utils.RecoveryAuthnCodesUtils;
 import org.keycloak.util.JsonSerialization;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.keycloak.models.credential.RecoveryAuthnCodesCredentialModel.*;
@@ -71,11 +76,14 @@ public class RecoveryAuthnCodesCredentialProvider
         CredentialMetadata credentialMetadata = new CredentialMetadata();
         try {
             RecoveryAuthnCodesCredentialData credentialData = JsonSerialization.readValue(credentialModel.getCredentialData(), RecoveryAuthnCodesCredentialData.class);
-            if (credentialData.getRemainingCodes() < 4) {
+            if (credentialData.getRemainingCodes() < getWarningThreshold()) {
                 credentialMetadata.setWarningMessageTitle(RECOVERY_CODES_NUMBER_REMAINING, String.valueOf(credentialData.getRemainingCodes()));
                 credentialMetadata.setWarningMessageDescription(RECOVERY_CODES_GENERATE_NEW_CODES);
             }
-            credentialMetadata.setInfoMessage(RECOVERY_CODES_NUMBER_USED,String.valueOf(credentialData.getTotalCodes() - credentialData.getRemainingCodes()));
+
+            int codesUsed = credentialData.getTotalCodes() - credentialData.getRemainingCodes();
+            String codesUsedMessage = codesUsed + "/" + credentialData.getTotalCodes();
+            credentialMetadata.setInfoMessage(RECOVERY_CODES_NUMBER_USED, codesUsedMessage);
         } catch (IOException e) {
             logger.warn("unable to deserialize model information, skipping messages", e);
         }
@@ -91,8 +99,7 @@ public class RecoveryAuthnCodesCredentialProvider
 
     @Override
     public boolean isConfiguredFor(RealmModel realm, UserModel user, String credentialType) {
-        return session.userCredentialManager().getStoredCredentialsByTypeStream(realm, user, credentialType).findAny()
-                .isPresent();
+        return session.userCredentialManager().getStoredCredentialsByTypeStream(realm, user, credentialType).anyMatch(Objects::nonNull);
     }
 
     @Override
@@ -104,15 +111,22 @@ public class RecoveryAuthnCodesCredentialProvider
             RecoveryAuthnCodesCredentialModel credentialModel = RecoveryAuthnCodesCredentialModel
                     .createFromCredentialModel(credential.get());
             if (!credentialModel.allCodesUsed()) {
-                String nextRecoveryCode = credentialModel.getNextRecoveryAuthnCode().getEncodedHashedValue();
-                if (RecoveryAuthnCodesUtils.verifyRecoveryCodeInput(rawInputRecoveryAuthnCode, nextRecoveryCode)) {
-                    credentialModel.removeRecoveryAuthnCode();
-                    session.userCredentialManager().updateCredential(realm, user, credentialModel);
-                    return true;
+                Optional<RecoveryAuthnCodeRepresentation> nextRecoveryAuthnCode = credentialModel.getNextRecoveryAuthnCode();
+                if (nextRecoveryAuthnCode.isPresent()) {
+                    String nextRecoveryCode = nextRecoveryAuthnCode.get().getEncodedHashedValue();
+                    if (RecoveryAuthnCodesUtils.verifyRecoveryCodeInput(rawInputRecoveryAuthnCode, nextRecoveryCode)) {
+                        credentialModel.removeRecoveryAuthnCode();
+                        session.userCredentialManager().updateCredential(realm, user, credentialModel);
+                        return true;
+                    }
+
                 }
             }
         }
         return false;
     }
 
+    protected int getWarningThreshold() {
+        return session.getContext().getRealm().getPasswordPolicy().getRecoveryCodesWarningThreshold();
+    }
 }

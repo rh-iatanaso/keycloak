@@ -18,7 +18,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.ModelToRepresentation;
-import org.keycloak.representations.idm.CredentialMetadataRepresentation;
+import org.keycloak.representations.account.CredentialMetadataRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.ErrorResponseException;
@@ -173,8 +173,7 @@ public class AccountCredentialResource {
         Set<String> enabledCredentialTypes = getEnabledCredentialTypes(credentialProviders);
 
         Stream<CredentialModel> modelsStream = includeUserCredentials ? session.userCredentialManager().getStoredCredentialsStream(realm, user) : Stream.empty();
-        // Don't return secrets from REST endpoint
-        List<CredentialModel> models = modelsStream.peek(model -> model.setSecretData(null)).collect(Collectors.toList());
+        List<CredentialModel> models = modelsStream.collect(Collectors.toList());
 
         Function<CredentialProvider, CredentialContainer> toCredentialContainer = (credentialProvider) -> {
             CredentialTypeMetadataContext ctx = CredentialTypeMetadataContext.builder()
@@ -197,6 +196,8 @@ public class AccountCredentialResource {
                             );
                         }).collect(Collectors.toList());
 
+                // Don't return secrets from REST endpoint
+                credentialMetadataList.stream().forEach(md -> md.getCredentialModel().setSecretData(null));
                 userCredentialMetadataModels = credentialMetadataList.stream().map(ModelToRepresentation::toRepresentation).collect(Collectors.toList());
 
                 if (userCredentialMetadataModels.isEmpty() &&

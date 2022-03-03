@@ -59,10 +59,7 @@ public class OTPCredentialModel extends CredentialModel {
     public static OTPCredentialModel createFromCredentialModel(CredentialModel credentialModel) {
         try {
             OTPCredentialData credentialData = JsonSerialization.readValue(credentialModel.getCredentialData(), OTPCredentialData.class);
-            OTPSecretData secretData = null;
-            if (credentialModel.getSecretData() != null) {
-                secretData = JsonSerialization.readValue(credentialModel.getSecretData(), OTPSecretData.class);
-            }
+            OTPSecretData secretData = JsonSerialization.readValue(credentialModel.getSecretData(), OTPSecretData.class);
 
             OTPCredentialModel otpCredentialModel = new OTPCredentialModel(credentialData, secretData);
             otpCredentialModel.setUserLabel(credentialModel.getUserLabel());
