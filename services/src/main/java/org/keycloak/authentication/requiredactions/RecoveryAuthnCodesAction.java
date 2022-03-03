@@ -8,6 +8,7 @@ import org.keycloak.authentication.InitiatedActionSupport;
 import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.authentication.RequiredActionFactory;
 import org.keycloak.authentication.RequiredActionProvider;
+import org.keycloak.common.Profile;
 import org.keycloak.credential.RecoveryAuthnCodesCredentialProviderFactory;
 import org.keycloak.credential.CredentialProvider;
 import org.keycloak.events.Details;
@@ -17,11 +18,12 @@ import org.keycloak.models.PasswordPolicy;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.RecoveryAuthnCodesCredentialModel;
 import org.keycloak.models.utils.RecoveryAuthnCodesUtils;
+import org.keycloak.provider.EnvironmentDependentProviderFactory;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-public class RecoveryAuthnCodesAction implements RequiredActionProvider, RequiredActionFactory {
+public class RecoveryAuthnCodesAction implements RequiredActionProvider, RequiredActionFactory, EnvironmentDependentProviderFactory {
 
     private static final String FIELD_GENERATED_RECOVERY_AUTHN_CODES_HIDDEN = "generatedRecoveryAuthnCodes";
     private static final String FIELD_GENERATED_AT_HIDDEN = "generatedAt";
@@ -107,4 +109,8 @@ public class RecoveryAuthnCodesAction implements RequiredActionProvider, Require
     public void close() {
     }
 
+    @Override
+    public boolean isSupported() {
+        return Profile.isFeatureEnabled(Profile.Feature.RECOVERY_CODES);
+    }
 }

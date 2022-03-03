@@ -1,6 +1,8 @@
 package org.keycloak.credential;
 
 import org.jboss.logging.Logger;
+import org.keycloak.Config;
+import org.keycloak.common.Profile;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.PasswordPolicy;
 import org.keycloak.models.RealmModel;
