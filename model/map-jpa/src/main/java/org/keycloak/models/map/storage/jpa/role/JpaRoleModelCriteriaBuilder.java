@@ -98,6 +98,10 @@ public class JpaRoleModelCriteriaBuilder extends JpaModelCriteriaBuilder<JpaRole
                         collectionValues = new HashSet(Arrays.asList(value));
                     }
 
+                    if (collectionValues.isEmpty()) {
+                        return new JpaRoleModelCriteriaBuilder((cb, root) -> cb.or());
+                    }
+
                     return new JpaRoleModelCriteriaBuilder((cb, root) ->  {
                         In<UUID> in = cb.in(root.get("id"));
                         for (Object id : collectionValues) {

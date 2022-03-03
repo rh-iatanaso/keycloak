@@ -25,6 +25,7 @@ import org.keycloak.TokenVerifier.TokenTypeCheck;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.AuthenticationFlowException;
 import org.keycloak.authentication.AuthenticationProcessor;
+import org.keycloak.authentication.AuthenticatorUtil;
 import org.keycloak.authentication.ConsoleDisplayMode;
 import org.keycloak.authentication.DisplayTypeRequiredActionFactory;
 import org.keycloak.authentication.InitiatedActionSupport;
@@ -919,7 +920,7 @@ public class AuthenticationManager {
         AuthenticatedClientSessionModel clientSession = clientSessionCtx.getClientSession();
 
         // Update userSession note with authTime. But just if flag SSO_AUTH is not set
-        boolean isSSOAuthentication = "true".equals(authSession.getAuthNote(SSO_AUTH));
+        boolean isSSOAuthentication = AuthenticatorUtil.isSSOAuthentication(authSession);
         if (isSSOAuthentication) {
             clientSession.setNote(SSO_AUTH, "true");
             authSession.removeAuthNote(SSO_AUTH);
@@ -1191,9 +1192,7 @@ public class AuthenticationManager {
         //if Dynamic Scopes are enabled, get the scopes from the AuthorizationRequestContext, passing the session and scopes as parameters
         // then concat a Stream with the ClientModel, as it's discarded in the getAuthorizationRequestContext method
         if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES)) {
-            return Stream.concat(AuthorizationContextUtil.getAuthorizationRequestContextFromScopes(session, authSession.getClientNote(OAuth2Constants.SCOPE))
-                    .getAuthorizationDetailEntries().stream(),
-                    Collections.singletonList(new AuthorizationDetails(session.getContext().getClient())).stream());
+            return AuthorizationContextUtil.getAuthorizationRequestsStreamFromScopesWithClient(session, authSession.getClientNote(OAuth2Constants.SCOPE));
         }
         // if dynamic scopes are not enabled, we retain the old behaviour, but the ClientScopes will be wrapped in
         // AuthorizationRequest objects to standardize the code handling these.
