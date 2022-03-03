@@ -17,6 +17,7 @@ import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.RequiredActionProviderSimpleRepresentation;
 import org.keycloak.testsuite.AbstractTestRealmKeycloakTest;
 import org.keycloak.testsuite.admin.ApiUtil;
+import org.keycloak.testsuite.arquillian.annotation.EnableFeature;
 import org.keycloak.testsuite.client.KeycloakTestingClient;
 import org.keycloak.testsuite.pages.EnterRecoveryAuthnCodePage;
 import org.keycloak.testsuite.pages.LoginPage;
@@ -34,12 +35,14 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.keycloak.common.Profile.Feature.RECOVERY_CODES;
 
 /**
  * Backup Code Authentication test
  *
  * @author <a href="mailto:vnukala@redhat.com">Venkata Nukala</a>
  */
+@EnableFeature(value = RECOVERY_CODES, skipRestart = true)
 public class RecoveryAuthnCodesAuthenticatorTest extends AbstractTestRealmKeycloakTest {
 
     private static final String BROWSER_FLOW_WITH_RECOVERY_AUTHN_CODES = "Browser with Recovery Authentication Codes";

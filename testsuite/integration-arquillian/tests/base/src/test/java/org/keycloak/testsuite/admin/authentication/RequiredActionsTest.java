@@ -47,7 +47,6 @@ public class RequiredActionsTest extends AbstractAuthenticationTest {
         List<RequiredActionProviderRepresentation> result = authMgmtResource.getRequiredActions();
 
         List<RequiredActionProviderRepresentation> expected = new ArrayList<>();
-        addRequiredAction(expected, "CONFIGURE_RECOVERY_AUTHN_CODES", "Recovery Authentication Codes", true, false, null);
         addRequiredAction(expected, "CONFIGURE_TOTP", "Configure OTP", true, false, null);
         addRequiredAction(expected, "UPDATE_PASSWORD", "Update Password", true, false, null);
         addRequiredAction(expected, "UPDATE_PROFILE", "Update Profile", true, false, null);
