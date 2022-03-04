@@ -44,10 +44,6 @@ public class PasswordPolicy implements Serializable {
 
     public static final String FORCE_EXPIRED_ID = "forceExpiredPasswordChange";
 
-    public static final int RECOVERY_CODES_WARNING_THRESHOLD_DEFAULT = 4;
-
-    public static final String RECOVERY_CODES_WARNING_THRESHOLD_ID = "recoveryCodesWarningThreshold";
-
     private Map<String, Object> policyConfig;
     private Builder builder;
 
@@ -105,14 +101,6 @@ public class PasswordPolicy implements Serializable {
             return getPolicyConfig(FORCE_EXPIRED_ID);
         } else {
             return -1;
-        }
-    }
-
-    public int getRecoveryCodesWarningThreshold() {
-        if (policyConfig.containsKey(RECOVERY_CODES_WARNING_THRESHOLD_ID)) {
-            return getPolicyConfig(RECOVERY_CODES_WARNING_THRESHOLD_ID);
-        } else {
-            return 4;
         }
     }
 

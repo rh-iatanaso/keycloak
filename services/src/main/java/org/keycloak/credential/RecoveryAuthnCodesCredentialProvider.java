@@ -1,10 +1,7 @@
 package org.keycloak.credential;
 
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
-import org.keycloak.common.Profile;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.PasswordPolicy;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.RecoveryAuthnCodesCredentialModel;
@@ -127,6 +124,6 @@ public class RecoveryAuthnCodesCredentialProvider
     }
 
     protected int getWarningThreshold() {
-        return session.getContext().getRealm().getPasswordPolicy().getRecoveryCodesWarningThreshold();
+        return 4;
     }
 }

@@ -4,9 +4,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.keycloak.credential.CredentialMetadata;
 import org.keycloak.credential.CredentialModel;
-import org.keycloak.models.PasswordPolicy;
 import org.keycloak.models.credential.dto.RecoveryAuthnCodeRepresentation;
 import org.keycloak.models.credential.dto.RecoveryAuthnCodesCredentialData;
 import org.keycloak.models.credential.dto.RecoveryAuthnCodesSecretData;
